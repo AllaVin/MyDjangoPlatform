@@ -28,14 +28,12 @@ GENRE_CHOICES = [
     ('not_set', 'default'),
 ]
 
-# class Publisher(models.Model):
-#     name = models.CharField(max_length=100, verbose_name="Name")
-#     address = models.CharField(max_length=255, null=True, verbose_name="Address")
-#     city = models.CharField(max_length=100, null=True, blank=True, verbose_name="City")
-#     country = models.CharField(max_length=100, verbose_name="Country")
-#
-#     def __str__(self):
-#         return f'{self.name}'
+class Publisher(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Publisher Name")
+    established_date = models.DateField(null=True, blank=True, verbose_name="Established Date")
+
+    def __str__(self):
+        return f'{self.name}'
 
 
 class Book(models.Model):
@@ -46,9 +44,11 @@ class Book(models.Model):
     genre = models.CharField(choices=GENRE_CHOICES, max_length=50, verbose_name="Genre", default='not_set')
     amount_of_pages = models.PositiveIntegerField(null=True, blank=True, validators=[MaxValueValidator(10000)],
                                                   verbose_name="Amount of pages", default=50)
-    publisher = models.ForeignKey('Member', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Publisher")
+    publisher = models.ForeignKey('Member', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Member")
     category = models.ForeignKey('Category', null=True, on_delete=models.SET_NULL, verbose_name="Category")
     library = models.ManyToManyField('Library', related_name='books', verbose_name="Library")
+    publisher_real = models.ForeignKey('Publisher', null=True, blank=True, on_delete=models.CASCADE, verbose_name="Publisher")
+    created_at = models.DateTimeField(null=True, blank=True, verbose_name="Created at")
 
     @property
     def rating(self):
