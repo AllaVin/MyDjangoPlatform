@@ -4,33 +4,106 @@ from django.http import HttpResponse
 from django.utils import timezone
 from django.db.models import Q
 from TaskManager_app.models import Task, Project, SubTask
-from TaskManager_app.serializers import TaskCreateSerializer
+from TaskManager_app.serializers import TaskCreateSerializer, AllTasksListSerializer, TaskByIDSerializer
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
+from django.db.models import Count
+from django.utils.timezone import now
 
-# ___ HW_12. Задание 1: Эндпоинт для создания задачи
+
+# ____ HW_12. Задание 1: Эндпоинт для создания задачи
 # Создайте эндпоинт для создания новой задачи. Задача должна быть создана с полями title, description, status, и deadline.
 # Шаги для выполнения:
 # Определите сериализатор для модели Task.
 # Создайте представление для создания задачи.
 # Создайте маршрут для обращения к представлению.
 
+# @api_view(['POST'])
+# def new_task(request):
+#     serializer = TaskCreateSerializer(data=request.data)
+#     if serializer.is_valid():
+#         try:
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         except Exception as e:
+#             return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
-def new_task(request):
-    serializer = TaskCreateSerializer(data=request.data)
-    if serializer.is_valid():
-        try:
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# # ____ HW_12. Task 2. Эндпоинты для получения списка задач и конкретной задачи по её ID
+    # Создайте два новых эндпоинта для:
+    # Получения списка задач
+    # Получения конкретной задачи по её уникальному ID
+    #   Шаги для выполнения:
+    # Создайте представления для получения списка задач и конкретной задачи.
+    # Создайте маршруты для обращения к представлениям.
+
+# # ____ HW_12. Task2 Список всех задач
+# @api_view(['GET'])
+# def all_tasks_list(request):
+#     tasks = Task.objects.all()
+#     serializer = AllTasksListSerializer(tasks, many=True)
+#     return Response(serializer.data, status=status.HTTP_200_OK)
+
+# # ____ HW_12. Task 2. Задача по ID
+# @api_view(['GET'])
+# def view_task_by_id(request, task_id):
+#     try:
+#         task = Task.objects.get(id=task_id)
+#     except Task.DoesNotExist:
+#         return Response({'error': 'Task not found'}, status=status.HTTP_404_NOT_FOUND)
+#     serializer = TaskByIDSerializer(task)
+#     return Response(serializer.data, status=status.HTTP_200_OK)
+
+# # ____ HW_12. Task 3. Агрегирующий эндпоинт для статистики задач
+        # Создайте эндпоинт для получения статистики задач, таких как общее количество задач, количество задач по каждому статусу и количество просроченных задач.
+        # Шаги для выполнения:
+        # Определите представление для агрегирования данных о задачах.
+        # Создайте маршрут для обращения к представлению.
+        # Оформите ваш ответ следующим образом:
+        # Код эндпоинтов: Вставьте весь код представлений и маршрутов.
+        # Скриншоты ручного тестирования: Приложите скриншоты консоли или Postman, подтверждающие успешное выполнение запросов для каждого эндпоинта.
+
+# # # ____ Общее количество задач
+# @api_view(['GET'])
+# def task_count(request):
+#     count = Task.objects.count()
+#     return Response({'total_tasks': count}, status=status.HTTP_200_OK)
+
+# # ____ Количество задач по каждому статусу
+@api_view(['GET'])
+def task_per_status(request):
+    tasks_per_status = Task.objects.values('status').annotate(count=Count('status'))
+    # Преобразуем в формат {"New": 5, "Done": 3, ...}
+    result = {item['status']: item['count'] for item in tasks_per_status}
+    return Response(result, status=status.HTTP_200_OK)
+
+
+# # ____ Количество просроченных задач
+@api_view(['GET'])
+def overdue_tasks_count(request):
+    today = now().date()
+    # считаем задачи, у которых deadline в прошлом и статус не "Done"
+    count = Task.objects.filter(deadline__lt=today).exclude(status='Done').count()
+    return Response({'overdue_tasks': count}, status=status.HTTP_200_OK)
 
 
 
-#
+# # ____ Задание 3: Агрегирующий эндпоинт для статистики задач
+        # Создайте эндпоинт для получения статистики задач, таких как общее количество задач, количество задач по каждому статусу и количество просроченных задач.
+        # Шаги для выполнения:
+        # Определите представление для агрегирования данных о задачах.
+        # Создайте маршрут для обращения к представлению.
+        # Оформите ваш ответ следующим образом:
+        # Код эндпоинтов: Вставьте весь код представлений и маршрутов.
+        # Скриншоты ручного тестирования: Приложите скриншоты консоли или Postman, подтверждающие успешное выполнение запросов для каждого эндпоинта.
+        # Требуемые условия завершения
+
+# @api_view(['GET'])
+# def
+
+
+
 # def test(request):
 #     # print("🔍 test() was triggered")
 #     return HttpResponse("🧪 Test endpoint is alive!")
@@ -106,7 +179,7 @@ def new_task(request):
 #         }
 #     )
 #
-#     return HttpResponse("Congrats, Task and SubTask have been created!")
+    # return HttpResponse("Congrats, Task and SubTask have been created!")
 #
 # # ----- READING -----
 # # Вывести все задачи, у которых статус "New".

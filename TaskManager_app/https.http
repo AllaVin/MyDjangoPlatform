@@ -1,4 +1,4 @@
-# ___ API endpoint for Create new task
+### ____  API endpoint for Create new task
 POST http://127.0.0.1:8000/TaskManager_app/new_task/
 Content-Type: application/json
 
@@ -7,5 +7,27 @@ Content-Type: application/json
   "description": "Create a task via HTTP Client",
   "status": "New",
   "deadline": "2025-07-27",
-  "project": 1  // ID проекта, который уже есть в БД
+  "project": 1
 }
+
+### ____ API endpoint to GET all tasks
+GET http://127.0.0.1:8000/TaskManager_app/all_tasks_list/
+Content-Type: application/json
+
+
+### ____ API endpoint to GET task by ID
+GET http://127.0.0.1:8000/TaskManager_app/view_task_by_id/5/
+Content-Type: application/json
+
+
+### ____ API endpoint to common number of tasks
+GET http://127.0.0.1:8000/TaskManager_app/task_count/
+Content-Type: application/json
+
+### ____ API endpoint to display tasks per status
+GET http://127.0.0.1:8000/TaskManager_app/task_per_status/
+Content-Type: application/json
+
+### ____ API endpoint to display overdue tasks
+GET http://127.0.0.1:8000/TaskManager_app/overdue_tasks_count/
+Accept: application/json
