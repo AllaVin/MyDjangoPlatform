@@ -31,10 +31,10 @@ class DeveloperAdmin(admin.ModelAdmin):
     # Сoздание красивого класса Администратора для модели Task:
 class TaskAdmin(admin.ModelAdmin):
     # Определение полей, которые будут отображаться в списке объектов модели
-    list_display = ('name', 'project_name', 'status', 'priority', 'created_at', 'due_date', 'assignee')  # project__name - для обращения к связанной модели __ .
+    list_display = ('name', 'status', 'priority', 'created_at', 'due_date', 'assignee')  # project__name - для обращения к связанной модели __ .
     # Задание полей по которым будет производиться поиск
     search_fields = ('name',)
-    list_filter = ('status', 'priority', 'project__name', 'created_at', 'due_date', 'assignee__username')
+    list_filter = ('status', 'priority', 'created_at', 'due_date', 'assignee__username')
 
 
 

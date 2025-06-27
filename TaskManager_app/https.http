@@ -1,0 +1,11 @@
+# ___ API endpoint for Create new task
+POST http://127.0.0.1:8000/TaskManager_app/new_task/
+Content-Type: application/json
+
+{
+  "title": "Learn API creation",
+  "description": "Create a task via HTTP Client",
+  "status": "New",
+  "deadline": "2025-07-27",
+  "project": 1  // ID проекта, который уже есть в БД
+}

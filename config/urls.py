@@ -15,20 +15,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path, include
-
-
-
-from project.views import test
+# from project.views import test
 from django.urls import path
 from django.contrib import admin
-
 
 
 urlpatterns = [
     path("admin/", admin.site.urls), ## http://127.0.0.1:8000/admin/
     # path("project/", project.urls),
-    path('', include('project.urls')), ## http://127.0.0.1:8000/admin/project/
+    path('project/', include('project.urls')), ## http://127.0.0.1:8000/admin/project/
     path('', include('library.urls')), ## http://127.0.0.1:8000/admin/library/
-    path('', include('TaskManager_app.urls')), ## http://127.0.0.1:8000/admin/TaskManager_app/
+    path('TaskManager_app/', include('TaskManager_app.urls')),
 ]
 
