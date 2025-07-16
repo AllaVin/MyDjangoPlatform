@@ -11,8 +11,20 @@ from rest_framework.response import Response
 from django.db.models import Count
 from django.utils.timezone import now
 
+# _____ Задание 5 HW_13: Создание классов представлений
+# Создайте классы представлений для работы с подзадачами (SubTasks), включая создание, получение, обновление и
+# удаление подзадач. Используйте классы представлений (APIView) для реализации этого функционала.
+# ______ Шаги для выполнения:
+# Создайте классы представлений для создания и получения списка подзадач (SubTaskListCreateView).
+# Создайте классы представлений для получения, обновления и удаления подзадач (SubTaskDetailUpdateDeleteView).
+# Добавьте маршруты в файле urls.py, чтобы использовать эти классы.
+from rest_framework.views import APIView
+from TaskManager_app.serializers import SubTaskCreateSerializer
+from TaskManager_app.models import SubTask
 
-# # ____ HW_12. Задание 1: Эндпоинт для создания задачи
+
+
+# # _____ Задание 1 HW_12: Эндпоинт для создания задачи
 # Создайте эндпоинт для создания новой задачи. Задача должна быть создана с полями title, description, status, и deadline.
 # Шаги для выполнения:
 # Определите сериализатор для модели Task.
@@ -30,7 +42,7 @@ def new_task(request):
             return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# # ____ HW_12. Task 2. Эндпоинты для получения списка задач и конкретной задачи по её ID
+# # _____ Task 2 HW_12. Эндпоинты для получения списка задач и конкретной задачи по её ID
     # Создайте два новых эндпоинта для:
     # Получения списка задач
     # Получения конкретной задачи по её уникальному ID
@@ -38,14 +50,14 @@ def new_task(request):
     # Создайте представления для получения списка задач и конкретной задачи.
     # Создайте маршруты для обращения к представлениям.
 
-# # ____ HW_12. Task1 Список всех задач
+# # _____ Task1 HW_12 Список всех задач
 @api_view(['GET'])
 def all_tasks_list(request):
     tasks = Task.objects.all()
     serializer = AllTasksListSerializer(tasks, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-# # ____ HW_12. Task 2. Задача по ID
+# # _____ Task 2 HW_12. Задача по ID
 @api_view(['GET'])
 def view_task_by_id(request, task_id):
     try:
@@ -55,7 +67,7 @@ def view_task_by_id(request, task_id):
     serializer = TaskByIDSerializer(task)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-# # ____ HW_12. Task 3. Агрегирующий эндпоинт для статистики задач
+# # _____ Task 3 HW_12. Агрегирующий эндпоинт для статистики задач
         # Создайте эндпоинт для получения статистики задач, таких как общее количество задач, количество задач по каждому статусу и количество просроченных задач.
         # Шаги для выполнения:
         # Определите представление для агрегирования данных о задачах.
@@ -201,3 +213,49 @@ def overdue_tasks_count(request):
 # task_to_delete = Task.objects.get(title="Prepare presentation")
 # task_to_delete.delete()
 
+
+# _____ HW_13 Task5. Класс для создания и просмотра списка подзадач
+class SubTaskListCreateView(APIView):
+    def get(self, request):
+        subtasks = SubTask.objects.all()
+        serializer = SubTaskCreateSerializer(subtasks, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = SubTaskCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# _____ HW_13 Task5. Класс для получения, обновления и удаления подзадачи по ID
+class SubTaskDetailUpdateDeleteView(APIView):
+    def get_object(self, pk):
+        try:
+            return SubTask.objects.get(pk=pk)
+        except SubTask.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        subtask = self.get_object(pk)
+        if not subtask:
+            return Response({'error': 'SubTask not found'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = SubTaskCreateSerializer(subtask)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        subtask = self.get_object(pk)
+        if not subtask:
+            return Response({'error': 'SubTask not found'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = SubTaskCreateSerializer(subtask, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        subtask = self.get_object(pk)
+        if not subtask:
+            return Response({'error': 'SubTask not found'}, status=status.HTTP_404_NOT_FOUND)
+        subtask.delete()
+        return Response({'message': 'SubTask deleted'}, status=status.HTTP_204_NO_CONTENT)
