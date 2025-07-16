@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from rest_framework.pagination import PageNumberPagination
+
 # import os
 # import environ
 # from environ import Env
@@ -130,3 +132,13 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# _____ HW_14 Задание 2:
+# Добавить пагинацию в отображение списка подзадач.
+# На одну страницу должно отображаться не более 5 объектов.
+# Отображение объектов должно идти в порядке убывания даты (от самого последнего добавленного объекта к самому первому)
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 5 # Будет использоваться постраничная пагинация, на одной странице — не более 5 подзадач.
+}

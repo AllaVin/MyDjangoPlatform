@@ -6,7 +6,8 @@ from TaskManager_app.views import view_task_by_id
 from TaskManager_app.views import task_count
 from TaskManager_app.views import task_per_status
 from TaskManager_app.views import overdue_tasks_count
-from TaskManager_app.views import SubTaskDetailUpdateDeleteView, SubTaskListCreateView
+from TaskManager_app.views import SubTaskDetailUpdateDeleteView, SubTaskListCreateView, FilteredSubTaskListView
+from TaskManager_app.views import tasks_by_weekday
 
 
 # from TaskManager_app.views import test, show_new_tasks
@@ -27,7 +28,23 @@ urlpatterns = [
     path('task_per_status/', view=task_per_status), # http://127.0.0.1:8000/TaskManager_app/tasks_per_status/
     path('overdue_tasks_count/', view=overdue_tasks_count), # http://127.0.0.1:8000/TaskManager_app/overdue_tasks_count/
 
-    # HW_13 Task 5. Добавляем маршруты
+    # _____ HW_13 Task 5. Добавляем маршруты
+    # _____ HW_14 Task 2. Переходить между страницами можно с помощью query-параметра, например:/subtasks/?page=2
     path('subtasks/', SubTaskListCreateView.as_view(), name='subtask-list-create'),
     path('subtasks/<int:pk>/', SubTaskDetailUpdateDeleteView.as_view(), name='subtask-detail-update-delete'),
+
+    # _____ HW_14 Task 1. Добавляем маршруты
+    path('tasks-by-weekday/', tasks_by_weekday, name='tasks-by-weekday'),
+    # _____  Примеры запросов:
+    # Все задачи:                |    Только задачи на вторник:
+    # GET /tasks-by-weekday/     |   GET /tasks-by-weekday/?weekday=tuesday
+
+    # _____ HW_14. Task 3.
+    path('subtasks/filter/', FilteredSubTaskListView.as_view(), name='filtered-subtasks'),
+    # _____ Примеры URL-запросов:
+    # Все подзадачи (первые 5, по дате):	/subtasks/filter/
+    # Подзадачи задачи Project X:	/subtasks/filter/?task_title=Project X
+    # Подзадачи со статусом New:	/subtasks/filter/?status=New
+    # Подзадачи задачи Presentation со статусом Done:	/subtasks/filter/?task_title=Presentation&status=Done
+
 ]

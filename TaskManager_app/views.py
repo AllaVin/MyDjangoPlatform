@@ -4,12 +4,14 @@ from django.http import HttpResponse
 from django.utils import timezone
 from django.db.models import Q
 from TaskManager_app.models import Task, Project, SubTask
-from TaskManager_app.serializers import TaskCreateSerializer, AllTasksListSerializer, TaskByIDSerializer
+from TaskManager_app.serializers import TaskCreateSerializer, AllTasksListSerializer, TaskByIDSerializer, SubTaskCreateSerializer
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
 from django.db.models import Count
 from django.utils.timezone import now
+from rest_framework.pagination import PageNumberPagination
+from rest_framework import generics
 
 # _____ Задание 5 HW_13: Создание классов представлений
 # Создайте классы представлений для работы с подзадачами (SubTasks), включая создание, получение, обновление и
@@ -19,10 +21,16 @@ from django.utils.timezone import now
 # Создайте классы представлений для получения, обновления и удаления подзадач (SubTaskDetailUpdateDeleteView).
 # Добавьте маршруты в файле urls.py, чтобы использовать эти классы.
 from rest_framework.views import APIView
-from TaskManager_app.serializers import SubTaskCreateSerializer
 from TaskManager_app.models import SubTask
 
-
+# _____ HW_14 Работа с параметрами запроса и пагинацией.
+# Задание 1:
+# Написать, или обновить, если уже есть, эндпоинт на получение списка всех задач по дню недели.
+# Если никакой параметр запроса не передавался - по умолчанию выводить все записи.
+# Если был передан день недели (например вторник) - выводить список задач только на этот день недели.
+from datetime import datetime
+import calendar
+from rest_framework.pagination import PageNumberPagination
 
 # # _____ Задание 1 HW_12: Эндпоинт для создания задачи
 # Создайте эндпоинт для создания новой задачи. Задача должна быть создана с полями title, description, status, и deadline.
@@ -214,12 +222,17 @@ def overdue_tasks_count(request):
 # task_to_delete.delete()
 
 
-# _____ HW_13 Task5. Класс для создания и просмотра списка подзадач
+# _____ HW_13 Task 5. Класс для создания и просмотра списка подзадач
+# _____ HW_14 Task 2. В соответствии с заданием обновим, чтобы добавить сортировку и пагинацию
 class SubTaskListCreateView(APIView):
     def get(self, request):
-        subtasks = SubTask.objects.all()
-        serializer = SubTaskCreateSerializer(subtasks, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        subtasks = SubTask.objects.all().order_by('-created_at')  # сортировка от новых к старым
+        paginator = PageNumberPagination()
+        paginator.page_size = 5
+
+        result_page = paginator.paginate_queryset(subtasks, request)
+        serializer = SubTaskCreateSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
         serializer = SubTaskCreateSerializer(data=request.data)
@@ -259,3 +272,63 @@ class SubTaskDetailUpdateDeleteView(APIView):
             return Response({'error': 'SubTask not found'}, status=status.HTTP_404_NOT_FOUND)
         subtask.delete()
         return Response({'message': 'SubTask deleted'}, status=status.HTTP_204_NO_CONTENT)
+
+# _____ HW_14 Task 1.
+# Эндпоинт для получения задач по дню недели
+@api_view(['GET'])
+def tasks_by_weekday(request):
+    weekday_param = request.GET.get('weekday', None)  # получаем ?weekday=...
+
+    # Если день не указан, возвращаем все задачи
+    if not weekday_param:
+        tasks = Task.objects.all()
+        serializer = AllTasksListSerializer(tasks, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # Преобразуем название дня в номер (0=понедельник, 6=воскресенье)
+    weekdays_map = {
+        'monday': 0,
+        'tuesday': 1,
+        'wednesday': 2,
+        'thursday': 3,
+        'friday': 4,
+        'saturday': 5,
+        'sunday': 6
+    }
+
+    weekday_param = weekday_param.lower()
+    if weekday_param not in weekdays_map:
+        return Response({'error': 'Invalid weekday. Use names like monday, tuesday, etc.'},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    weekday_number = weekdays_map[weekday_param]
+
+    # Фильтрация задач по дню недели (используем поле deadline)
+    tasks = Task.objects.filter(deadline__week_day=((weekday_number + 1) % 7 + 1))
+    # +2 и %7 нужны, т.к. в Django неделя начинается с воскресенья (1)
+
+    serializer = AllTasksListSerializer(tasks, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+# HW_14 Task 3.
+# Добавить или обновить, если уже есть, эндпоинт на получение списка всех подзадач по названию главной задачи и статусу подзадач.
+# Если фильтр параметры в запросе не передавались - выводить данные по умолчанию, с учётом пагинации.
+# Если бы передан фильтр параметр названия главной задачи - выводить данные по этой главной задаче.
+# Если был передан фильтр параметр конкретного статуса подзадачи - выводить данные по этому статусу.
+# Если были переданы оба фильтра - выводить данные в соответствии с этими фильтрами.
+
+# Для использования глобальные настройки пагинации автоматически - используем generics.ListAPIView
+class FilteredSubTaskListView(generics.ListAPIView):
+    serializer_class = SubTaskCreateSerializer
+
+    def get_queryset(self):
+        queryset = SubTask.objects.all().order_by('-created_at')
+        task_title = self.request.query_params.get('task_title')
+        status_param = self.request.query_params.get('status')
+
+        if task_title:
+            queryset = queryset.filter(task__title__icontains=task_title)
+        if status_param:
+            queryset = queryset.filter(status__iexact=status_param)
+
+        return queryset
