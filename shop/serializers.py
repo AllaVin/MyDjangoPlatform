@@ -1,0 +1,120 @@
+from rest_framework import serializers
+from .models import *
+import re
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'
+
+
+class SupplierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Supplier
+        fields = '__all__'
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+    supplier = SupplierSerializer(read_only=True)
+
+    class Meta:
+        model = Product
+        fields = ['name', 'category', 'supplier', 'price', 'quantity', 'article', 'available']
+
+
+class ProductCreateUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['name', 'category', 'supplier', 'price', 'quantity', 'article', 'available']
+
+
+class ProductDetailSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
+
+    class Meta:
+        model = ProductDetail
+        fields = ['product', 'description', 'manufacturing_date', 'expiration_date', 'weight']
+
+class ProductDetailCreateUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProductDetail
+        fields = ['product', 'description', 'manufacturing_date', 'expiration_date', 'weight']
+
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = ['country', 'city', 'street', 'house']
+
+
+class CustomerSerializer(serializers.ModelSerializer):
+    address = AddressSerializer(read_only=True) # Включает связанные объекты Address в виде вложенного сериалайзера.
+    class Meta:
+        model = Customer
+        fields = ['first_name', 'last_name', 'email', 'phone_number', 'address', 'date_joined', 'deleted', 'deleted_at']
+        read_only_fields = ['date_joined', 'deleted', 'deleted_at'] # Поля date_joined, deleted и deleted_at не должны быть доступны для создания и изменения.
+
+class CustomerCreateUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Customer
+        fields = ['first_name', 'last_name', 'email', 'phone_number', 'address', 'date_joined', 'deleted', 'deleted_at']
+
+    def validate_phone_number(self, value):
+
+        if len(value) < 10 or len(value) > 15:
+            raise serializers.ValidationError('Phone number must be 10-15 digits')
+        if not value.isdigit():
+            raise serializers.ValidationError('Phone number must be digit')
+
+        # Вариант валидации через регулярные выражения
+            # ^ - означает начало строки
+            # \d - только диджитц
+            # {10,15} - от 10 до 15 цифр
+            # $ - конец строки
+        # if not re.match(r'^\d{10,15}$', value):
+        #     raise serializers.ValidationError('Phone number must be 10-15 digits')
+
+        return value
+
+class OrderSerializer(serializers.ModelSerializer):
+    customer = CustomerSerializer(read_only=True)
+
+    class Meta:
+        model = Order
+        fields = ['customer', 'order_date']
+        read_only_fields = ['order_date']
+
+
+class OrderCreateUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['customer', 'order_date']
+        read_only_fields = ['order_date']
+
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
+    order = OrderSerializer(read_only=True)
+
+    class Meta:
+        model = OrderItem
+        fields = ['product', 'order', 'quantity', 'price']
+
+
+class OrderItemCreateUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ['order', 'product', 'quantity', 'price']
+
+    def validate_quantity(self, value):
+        if value > 1000:
+            raise serializers.ValidationError('Quantity must be less than 1000')
+
+        return value
+
+

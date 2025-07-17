@@ -24,7 +24,7 @@ urlpatterns = [
     path("admin/", admin.site.urls), ## http://127.0.0.1:8000/admin/
     # path("project/", project.urls),
     path('project/', include('project.urls')), ## http://127.0.0.1:8000/admin/project/
-    path('', include('library.urls')), ## http://127.0.0.1:8000/admin/library/
+    path('library/', include('library.urls')), ## http://127.0.0.1:8000/admin/library/
     path('TaskManager_app/', include('TaskManager_app.urls')),
 ]
 

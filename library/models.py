@@ -49,6 +49,9 @@ class Book(models.Model):
     library = models.ManyToManyField('Library', related_name='books', verbose_name="Library")
     publisher_real = models.ForeignKey('Publisher', null=True, blank=True, on_delete=models.CASCADE, verbose_name="Publisher")
     created_at = models.DateTimeField(null=True, blank=True, verbose_name="Created at")
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    discounted_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    is_bestseller = models.BooleanField(default=False)
 
     @property
     def rating(self):
