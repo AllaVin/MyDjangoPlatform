@@ -1,6 +1,7 @@
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.utils.text import slugify
 
 # Create your models here.
 
@@ -18,22 +19,35 @@ class Author(models.Model):
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
 
-GENRE_CHOICES = [
-    ('db_view_Fiction', 'Fiction'),
-    ('db_view_Non-Fiction', 'Non-Fiction'),
-    ('db_view_Science Fiction', 'Science Fiction'),
-    ('db_view_Fantasy', 'Fantasy'),
-    ('db_view_Mystery', 'Mystery'),
-    ('db_view_Biography', 'Biography'),
-    ('not_set', 'default'),
-]
+# GENRE_CHOICES = [
+#     ('db_view_Fiction', 'Fiction'),
+#     ('db_view_Non-Fiction', 'Non-Fiction'),
+#     ('db_view_Science Fiction', 'Science Fiction'),
+#     ('db_view_Fantasy', 'Fantasy'),
+#     ('db_view_Mystery', 'Mystery'),
+#     ('db_view_Biography', 'Biography'),
+#     ('not_set', 'default'),
+# ]
 
 class Publisher(models.Model):
     name = models.CharField(max_length=100, verbose_name="Publisher Name")
+    slug = models.SlugField(unique=True, null=True, blank=True)
     established_date = models.DateField(null=True, blank=True, verbose_name="Established Date")
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.name}'
+
+
+class Genre(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return f'Genre: {self.name}'
 
 
 class Book(models.Model):
@@ -41,17 +55,19 @@ class Book(models.Model):
     author = models.ForeignKey(Author, null=True, on_delete=models.SET_NULL)
     publishing_date = models.DateField(verbose_name="Publishing date")
     short_description = models.TextField(null=True, blank=True, verbose_name="Short description")
-    genre = models.CharField(choices=GENRE_CHOICES, max_length=50, verbose_name="Genre", default='not_set')
+    # genre = models.CharField(choices=GENRE_CHOICES, max_length=50, verbose_name="Genre", default='not_set')
     amount_of_pages = models.PositiveIntegerField(null=True, blank=True, validators=[MaxValueValidator(10000)],
                                                   verbose_name="Amount of pages", default=50)
-    publisher = models.ForeignKey('Member', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Member")
+    # publisher = models.ForeignKey('Member', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Member")
+    publisher = models.ForeignKey('Publisher', null=True, blank=True, on_delete=models.CASCADE, related_name='published_books', verbose_name="Displayed Publisher")
     category = models.ForeignKey('Category', null=True, on_delete=models.SET_NULL, verbose_name="Category")
     library = models.ManyToManyField('Library', related_name='books', verbose_name="Library")
-    publisher_real = models.ForeignKey('Publisher', null=True, blank=True, on_delete=models.CASCADE, verbose_name="Publisher")
+    publisher_real = models.ForeignKey('Publisher', null=True, blank=True, on_delete=models.CASCADE, related_name='verified_books', verbose_name="Verified Publisher")
     created_at = models.DateTimeField(null=True, blank=True, verbose_name="Created at")
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     discounted_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     is_bestseller = models.BooleanField(default=False)
+    genres = models.ManyToManyField(Genre, related_name='books', verbose_name="Genres")  # Новое поле Many-to-Many
 
     @property
     def rating(self):

@@ -3,9 +3,9 @@ from django.views.generic.base import View
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Book
-from .serializers import BookListSerializer, BookDetailSerializer, BookCreateSerializer
-from library.models import GENRE_CHOICES
+from .models import Book, Genre
+from .serializers import BookListSerializer, BookDetailSerializer, BookCreateSerializer, GenreSerializer
+# from library.models import GENRE_CHOICES
 from rest_framework.views import APIView
 
 
@@ -52,5 +52,17 @@ status=status.HTTP_404_NOT_FOUND)
 
 class GenreChoicesView(APIView):
     def get(self, request):
-        genres = [{'value': g[0], 'label': g[1]} for g in GENRE_CHOICES]
-        return Response(genres, status=status.HTTP_200_OK)
+        genres = Genre.objects.all()
+        serializer = GenreSerializer(genres, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+@api_view(['POST'])
+def create_genre(request):
+    serializer = GenreSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data,
+status=status.HTTP_201_CREATED)
+    return Response
