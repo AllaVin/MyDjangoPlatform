@@ -16,8 +16,22 @@ Including another URLconf
 """
 from django.urls import path, include
 # from project.views import test
-from django.urls import path
+from django.urls import path, re_path, include
 from django.contrib import admin
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+schema_view = get_schema_view(
+   openapi.Info(
+      title="TaskManager API",
+      default_version='v1',
+      description="Документация и тестирование API для TaskManager_app",
+      contact=openapi.Contact(email="matyashalla@gmail.com"),
+   ),
+   public=True,
+   permission_classes=[permissions.AllowAny],
+)
 
 
 urlpatterns = [
@@ -25,6 +39,14 @@ urlpatterns = [
     # path("project/", project.urls),
     path('project/', include('project.urls')), ## http://127.0.0.1:8000/admin/project/
     path('library/', include('library.urls')), ## http://127.0.0.1:8000/admin/library/
-    path('TaskManager_app/', include('TaskManager_app.urls')),
+    path('TaskManager_app/', include('TaskManager_app.urls')), # http://127.0.0.1:8000/admin/TaskManager_app/
+
+    # # _____ HW_15 Task 1. Доюавление путей в рамках выполнения задания
+    # Swagger UI:
+    re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'), #  Перейти на Swagger UI: http://127.0.0.1:8000/swagger/
+
+    # Redoc (дополнительно):
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'), # Перейти на Redoc: http://127.0.0.1:8000/redoc/
 ]
 

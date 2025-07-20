@@ -11,7 +11,11 @@ from rest_framework.response import Response
 from django.db.models import Count
 from django.utils.timezone import now
 from rest_framework.pagination import PageNumberPagination
-from rest_framework import generics
+from .filters import SubTaskFilter
+from rest_framework import generics, filters
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
+from TaskManager_app.serializers import TaskCreateSerializer, TaskByIDSerializer
 
 # _____ Задание 5 HW_13: Создание классов представлений
 # Создайте классы представлений для работы с подзадачами (SubTasks), включая создание, получение, обновление и
@@ -32,23 +36,39 @@ from datetime import datetime
 import calendar
 from rest_framework.pagination import PageNumberPagination
 
-# # _____ Задание 1 HW_12: Эндпоинт для создания задачи
+# _____ Задание 1 HW_12: Эндпоинт для создания задачи
 # Создайте эндпоинт для создания новой задачи. Задача должна быть создана с полями title, description, status, и deadline.
 # Шаги для выполнения:
 # Определите сериализатор для модели Task.
 # Создайте представление для создания задачи.
 # Создайте маршрут для обращения к представлению.
 
-@api_view(['POST'])
-def new_task(request):
-    serializer = TaskCreateSerializer(data=request.data)
-    if serializer.is_valid():
-        try:
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# _____ HW_15 Task1.
+# Замена представлений для задач (Tasks) на Generic Views
+# Шаги для выполнения:
+# Замените классы представлений для задач на Generic Views:
+# Используйте ListCreateAPIView для создания и получения списка задач.
+# Используйте RetrieveUpdateDestroyAPIView для получения, обновления и удаления задач.
+# Реализуйте фильтрацию, поиск и сортировку:
+# Реализуйте фильтрацию по полям status и deadline.
+# Реализуйте поиск по полям title и description.
+# Добавьте сортировку по полю created_at.
+
+# Закомментируем следующие функции:
+# @api_view(['POST']) def new_task(...)
+# @api_view(['GET']) def all_tasks_list(...)
+# @api_view(['GET']) def view_task_by_id(...)
+
+# @api_view(['POST']) # - будет заменена на generic view
+# def new_task(request):
+#     serializer = TaskCreateSerializer(data=request.data)
+#     if serializer.is_valid():
+#         try:
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         except Exception as e:
+#             return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # # _____ Task 2 HW_12. Эндпоинты для получения списка задач и конкретной задачи по её ID
     # Создайте два новых эндпоинта для:
@@ -59,21 +79,23 @@ def new_task(request):
     # Создайте маршруты для обращения к представлениям.
 
 # # _____ Task1 HW_12 Список всех задач
-@api_view(['GET'])
-def all_tasks_list(request):
-    tasks = Task.objects.all()
-    serializer = AllTasksListSerializer(tasks, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+# # Закомментируем в рамках выполнения HW_15 Task1
+# @api_view(['GET']) # - будет заменена на generic view
+# def all_tasks_list(request):
+#     tasks = Task.objects.all()
+#     serializer = AllTasksListSerializer(tasks, many=True)
+#     return Response(serializer.data, status=status.HTTP_200_OK)
 
 # # _____ Task 2 HW_12. Задача по ID
-@api_view(['GET'])
-def view_task_by_id(request, task_id):
-    try:
-        task = Task.objects.get(id=task_id)
-    except Task.DoesNotExist:
-        return Response({'error': 'Task not found'}, status=status.HTTP_404_NOT_FOUND)
-    serializer = TaskByIDSerializer(task)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+# # Закомментируем в рамках выполнения HW_15 Task1
+# @api_view(['GET']) # - будет заменена на generic view
+# def view_task_by_id(request, task_id):
+#     try:
+#         task = Task.objects.get(id=task_id)
+#     except Task.DoesNotExist:
+#         return Response({'error': 'Task not found'}, status=status.HTTP_404_NOT_FOUND)
+#     serializer = TaskByIDSerializer(task)
+#     return Response(serializer.data, status=status.HTTP_200_OK)
 
 # # _____ Task 3 HW_12. Агрегирующий эндпоинт для статистики задач
         # Создайте эндпоинт для получения статистики задач, таких как общее количество задач, количество задач по каждому статусу и количество просроченных задач.
@@ -224,54 +246,54 @@ def overdue_tasks_count(request):
 
 # _____ HW_13 Task 5. Класс для создания и просмотра списка подзадач
 # _____ HW_14 Task 2. В соответствии с заданием обновим, чтобы добавить сортировку и пагинацию
-class SubTaskListCreateView(APIView):
-    def get(self, request):
-        subtasks = SubTask.objects.all().order_by('-created_at')  # сортировка от новых к старым
-        paginator = PageNumberPagination()
-        paginator.page_size = 5
-
-        result_page = paginator.paginate_queryset(subtasks, request)
-        serializer = SubTaskCreateSerializer(result_page, many=True)
-        return paginator.get_paginated_response(serializer.data)
-
-    def post(self, request):
-        serializer = SubTaskCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# class SubTaskListCreateView(APIView):
+#     def get(self, request):
+#         subtasks = SubTask.objects.all().order_by('-created_at')  # сортировка от новых к старым
+#         paginator = PageNumberPagination()
+#         paginator.page_size = 5
+#
+#         result_page = paginator.paginate_queryset(subtasks, request)
+#         serializer = SubTaskCreateSerializer(result_page, many=True)
+#         return paginator.get_paginated_response(serializer.data)
+#
+#     def post(self, request):
+#         serializer = SubTaskCreateSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # _____ HW_13 Task5. Класс для получения, обновления и удаления подзадачи по ID
-class SubTaskDetailUpdateDeleteView(APIView):
-    def get_object(self, pk):
-        try:
-            return SubTask.objects.get(pk=pk)
-        except SubTask.DoesNotExist:
-            return None
-
-    def get(self, request, pk):
-        subtask = self.get_object(pk)
-        if not subtask:
-            return Response({'error': 'SubTask not found'}, status=status.HTTP_404_NOT_FOUND)
-        serializer = SubTaskCreateSerializer(subtask)
-        return Response(serializer.data)
-
-    def put(self, request, pk):
-        subtask = self.get_object(pk)
-        if not subtask:
-            return Response({'error': 'SubTask not found'}, status=status.HTTP_404_NOT_FOUND)
-        serializer = SubTaskCreateSerializer(subtask, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk):
-        subtask = self.get_object(pk)
-        if not subtask:
-            return Response({'error': 'SubTask not found'}, status=status.HTTP_404_NOT_FOUND)
-        subtask.delete()
-        return Response({'message': 'SubTask deleted'}, status=status.HTTP_204_NO_CONTENT)
+# class SubTaskDetailUpdateDeleteView(APIView):
+#     def get_object(self, pk):
+#         try:
+#             return SubTask.objects.get(pk=pk)
+#         except SubTask.DoesNotExist:
+#             return None
+#
+#     def get(self, request, pk):
+#         subtask = self.get_object(pk)
+#         if not subtask:
+#             return Response({'error': 'SubTask not found'}, status=status.HTTP_404_NOT_FOUND)
+#         serializer = SubTaskCreateSerializer(subtask)
+#         return Response(serializer.data)
+#
+#     def put(self, request, pk):
+#         subtask = self.get_object(pk)
+#         if not subtask:
+#             return Response({'error': 'SubTask not found'}, status=status.HTTP_404_NOT_FOUND)
+#         serializer = SubTaskCreateSerializer(subtask, data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#     def delete(self, request, pk):
+#         subtask = self.get_object(pk)
+#         if not subtask:
+#             return Response({'error': 'SubTask not found'}, status=status.HTTP_404_NOT_FOUND)
+#         subtask.delete()
+#         return Response({'message': 'SubTask deleted'}, status=status.HTTP_204_NO_CONTENT)
 
 # _____ HW_14 Task 1.
 # Эндпоинт для получения задач по дню недели
@@ -332,3 +354,44 @@ class FilteredSubTaskListView(generics.ListAPIView):
             queryset = queryset.filter(status__iexact=status_param)
 
         return queryset
+
+# HW_15 Task 1. Добавляем эти два класса вместо
+# - @api_view(['POST']) def new_task(...)
+# - @api_view(['GET']) def all_tasks_list(...)
+# - @api_view(['GET']) def view_task_by_id(...)
+
+class TaskListCreateView(generics.ListCreateAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskCreateSerializer
+
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['status', 'deadline']
+    search_fields = ['title', 'description']
+    ordering_fields = ['created_at']
+    ordering = ['-created_at']
+
+class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskByIDSerializer
+    lookup_field = 'id'
+
+# _____ HW_15 Task 2. В соответствии с заданием заменяю текущие представления SubTaskListCreateView (для получения и создания списка подзадач)
+# и SubTaskDetailUpdateDeleteView (для получения, редактирования и удаления одной подзадачи), которые написаны на APIView, на Generic Views
+# См. комментарии с HW_13 выше. Там они были созданы (строки 248-295)
+# Также:
+# Добавить фильтрацию по status и deadline.
+# Добавить поиск по title и description.
+# Добавить сортировку по created_at.
+
+class SubTaskListCreateView(generics.ListCreateAPIView):
+    queryset = SubTask.objects.all()
+    serializer_class = SubTaskCreateSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = SubTaskFilter  # вот тут важно
+    search_fields = ['title', 'description']
+    ordering_fields = ['created_at']
+
+
+class SubTaskDetailUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = SubTask.objects.all()
+    serializer_class = SubTaskCreateSerializer

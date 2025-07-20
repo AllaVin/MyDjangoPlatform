@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     "project",
     "TaskManager_app",
     "shop",
+    'drf_yasg',
+    'django_filters'
 ]
 
 MIDDLEWARE = [
@@ -140,5 +142,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 5 # Будет использоваться постраничная пагинация, на одной странице — не более 5 подзадач.
+    'PAGE_SIZE': 5, # Будет использоваться постраничная пагинация, на одной странице — не более 5 подзадач.
+
+    # _____ HW_15 Task 1. Подключаем django фильтрацию. Предварительно выполнив команду в терминале pip install django-filter
+    'DEFAULT_FILTER_BACKENDS': [
+            'django_filters.rest_framework.DjangoFilterBackend',
+            'rest_framework.filters.SearchFilter',
+            'rest_framework.filters.OrderingFilter',
+    ]
 }
