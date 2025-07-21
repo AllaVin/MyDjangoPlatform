@@ -48,5 +48,9 @@ urlpatterns = [
 
     # Redoc (дополнительно):
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'), # Перейти на Redoc: http://127.0.0.1:8000/redoc/
+
+    # Practicum 8
+    # Приложение shop
+    path('shop/', include('shop.urls')), # "category": "http://127.0.0.1:8000/shop/category/"
 ]
 
