@@ -6,7 +6,7 @@ from shop.serializers import CategorySerializer, SupplierSerializer, ProductSeri
     CustomerCreateUpdateSerializer, OrderSerializer, OrderCreateUpdateSerializer, OrderItemSerializer, \
     OrderItemCreateUpdateSerializer
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-
+from django_filters.rest_framework import DjangoFilterBackend
 
 class CategoryViewSet(viewsets.ModelViewSet):
     """
@@ -30,6 +30,8 @@ class ProductListCreateView(ListCreateAPIView):
     Представление для получения списка продуктов и создания нового продукта.
     """
     queryset = Product.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['category', 'price'] # Пример ссылки с фильтрацией по категории http://127.0.0.1:8000/shop/product/?category=1
 
     # Этот метод позволяет нам динамически выбирать сериалайзер
     def get_serializer_class(self):
@@ -69,6 +71,8 @@ class AddressViewSet(viewsets.ModelViewSet):
 
 class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['first_name', 'last_name']
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
