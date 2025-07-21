@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from rest_framework import viewsets
-from shop.models import Category, Supplier
-from shop.serializers import CategorySerializer, SupplierSerializer
+from shop.models import Category, Supplier, Product, ProductDetail, Address
+from shop.serializers import CategorySerializer, SupplierSerializer, ProductSerializer, ProductCreateUpdateSerializer, \
+    ProductDetailSerializer, ProductDetailCreateUpdateSerializer, AddressSerializer
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -21,5 +23,44 @@ class SupplierViewSet(viewsets.ModelViewSet):
     queryset = Supplier.objects.all()
 
 
+class ProductListCreateView(ListCreateAPIView):
+    """
+    Представление для получения списка продуктов и создания нового продукта.
+    """
+    queryset = Product.objects.all()
 
+    # Этот метод позволяет нам динамически выбирать сериалайзер
+    def get_serializer_class(self):
+        # Для безопасных методов (только чтение), таких как GET
+        if self.request.method == 'GET':
+            return ProductSerializer
+        # Для остальных методов (POST)
+        return ProductCreateUpdateSerializer
 
+class ProductRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
+    """
+    Представление для просмотра, обновления и удаления одного продукта.
+    """
+    queryset = Product.objects.all()
+
+    def get_serializer_class(self):
+        # Для чтения данных
+        if self.request.method == 'GET':
+            return ProductSerializer
+        # Для изменения или удаления (PUT, PATCH, DELETE)
+        return ProductCreateUpdateSerializer
+
+class ProductDetailViewSet(viewsets.ModelViewSet):
+    queryset = ProductDetail.objects.all()
+
+    # Этот метод позволяет нам динамически выбирать сериалайзер
+    def get_serializer_class(self):
+        # Для безопасных методов (только чтение), таких, как GET
+        if self.request.method == 'GET':
+            return ProductDetailSerializer
+        # Для остальных методов
+        return ProductDetailCreateUpdateSerializer
+
+class AddressViewSet(viewsets.ModelViewSet):
+    queryset = Address.objects.all()
+    serializer_class = AddressSerializer
