@@ -9,11 +9,23 @@ from TaskManager_app.views import overdue_tasks_count
 from TaskManager_app.views import SubTaskDetailUpdateDeleteView, SubTaskListCreateView, FilteredSubTaskListView
 from TaskManager_app.views import tasks_by_weekday
 from TaskManager_app.views import TaskListCreateView, TaskDetailView
+from TaskManager_app.views import CategoryViewSet
+from rest_framework.routers import DefaultRouter
 
 
 # from TaskManager_app.views import test, show_new_tasks
 # from TaskManager_app.views import test
 # from TaskManager_app.views import show_new_tasks, show_overdue_done_subtasks
+router = DefaultRouter()
+router.register('categories', CategoryViewSet, basename='categories')
+# Это сгенерирует пути:
+# GET     /categories/ # http://127.0.0.1:8000/TaskManager_app/categories/
+# POST    /categories/
+# GET     /categories/{id}/
+# PUT     /categories/{id}/
+# PATCH   /categories/{id}/
+# DELETE  /categories/{id}/
+# GET     /categories/{id}/count_tasks/
 urlpatterns = [
     # path('task_manager_path', view=test),  # http://127.0.0.1:8000/TaskManager_app/task_manager_path
 
@@ -52,3 +64,4 @@ urlpatterns = [
     path('tasks/', TaskListCreateView.as_view(), name='task-list-create'),
     path('tasks/<int:id>/', TaskDetailView.as_view(), name='task-detail'),
 ]
+urlpatterns += router.urls

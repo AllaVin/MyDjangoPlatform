@@ -3,9 +3,10 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.utils import timezone
 from django.db.models import Q
-from TaskManager_app.models import Task, Project, SubTask
-from TaskManager_app.serializers import TaskCreateSerializer, AllTasksListSerializer, TaskByIDSerializer, SubTaskCreateSerializer
-from rest_framework.decorators import api_view
+from TaskManager_app.models import Task, Project, SubTask, Category
+from TaskManager_app.serializers import TaskCreateSerializer, AllTasksListSerializer, TaskByIDSerializer, \
+    SubTaskCreateSerializer, CategorySerializer, CategoryCreateUpdateSerializer
+from rest_framework.decorators import api_view, action
 from rest_framework import status
 from rest_framework.response import Response
 from django.db.models import Count
@@ -16,6 +17,7 @@ from rest_framework import generics, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from TaskManager_app.serializers import TaskCreateSerializer, TaskByIDSerializer
+from rest_framework import viewsets
 
 # _____ Задание 5 HW_13: Создание классов представлений
 # Создайте классы представлений для работы с подзадачами (SubTasks), включая создание, получение, обновление и
@@ -395,3 +397,30 @@ class SubTaskListCreateView(generics.ListCreateAPIView):
 class SubTaskDetailUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = SubTask.objects.all()
     serializer_class = SubTaskCreateSerializer
+
+
+# # HW_16. Task 1.
+# Реализация CRUD для категорий с использованием ModelViewSet, мягкое удаление.
+# Реализовать полный CRUD для модели категорий (Categories) с помощью ModelViewSet, добавить кастомный метод для подсчета количества задач в каждой категории. Реализовать систему мягкого удаления для категорий.
+# Задание 1: Реализация CRUD для категорий с использованием ModelViewSet
+# Шаги для выполнения:
+# Создайте CategoryViewSet, используя ModelViewSet для CRUD операций.
+# Добавьте маршрут для CategoryViewSet.
+# Добавьте кастомный метод count_tasks используя декоратор @action для подсчета количества задач, связанных с каждой категорией.
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.filter(is_deleted=False)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return CategorySerializer
+        return CategoryCreateUpdateSerializer
+
+    def perform_destroy(self, instance): # Мягкое удаление
+        instance.is_deleted = True
+        instance.save()
+
+    @action(detail=True, methods=["get"])
+    def count_tasks(self, request, pk=None): # для подсчета задач в категории
+        category = self.get_object()
+        count = Task.objects.filter(categories=category).count()
+        return Response({"category_id": category.id, "task_count": count})

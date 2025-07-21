@@ -17,6 +17,9 @@ PRIORITY_CHOICES = [
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)  # ✅ автоматически при создании
+    updated_at = models.DateTimeField(auto_now=True)  # ✅ при каждом изменении
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'TaskManager_app_category'

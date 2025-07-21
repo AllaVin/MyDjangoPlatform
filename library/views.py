@@ -7,7 +7,8 @@ from .models import Book, Genre
 from .serializers import BookListSerializer, BookDetailSerializer, BookCreateSerializer, GenreSerializer
 # from library.models import GENRE_CHOICES
 from rest_framework.views import APIView
-
+from rest_framework.pagination import PageNumberPagination, CursorPagination
+from django_filters.rest_framework import DjangoFilterBackend
 
 # Create your views here.
 def test(request):
@@ -66,3 +67,15 @@ def create_genre(request):
         return Response(serializer.data,
 status=status.HTTP_201_CREATED)
     return Response
+
+
+# Создаем новый класс пагинации
+class BookPagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+class BookCursorPagination(CursorPagination):
+    page_size = 5
+    ordering = 'published_at'
+

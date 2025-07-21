@@ -134,6 +134,26 @@ STATIC_URL = "static/"
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'filters': {
+#         'require_debug_true': {
+#             '()': 'django.utils.log.RequireDebugTrue',
+#         }
+#     },
+#     'handlers': {
+#         'console': {
+#             'level': 'DEBUG',
+#             'class': 'logging.StreamHandler',
+#             'filters': ['require_debug_true'],
+#         }
+#     },
+#     # 'files': - дописать
+#
+# }
+
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # _____ HW_14 Задание 2:
@@ -144,6 +164,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 5, # Будет использоваться постраничная пагинация, на одной странице — не более 5 подзадач.
+
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    #     'PAGE_SIZE': 5, # Здесь page size работает как 'default_limit'
 
     # _____ HW_15 Task 1. Подключаем django фильтрацию. Предварительно выполнив команду в терминале pip install django-filter
     'DEFAULT_FILTER_BACKENDS': [

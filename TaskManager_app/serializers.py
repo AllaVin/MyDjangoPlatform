@@ -59,30 +59,30 @@ class SubTaskCreateSerializer(serializers.ModelSerializer):
 # Определите CategoryCreateSerializer в файле serializers.py.
 # Переопределите метод create для проверки уникальности названия категории.
 # Переопределите метод update для аналогичной проверки при обновлении.
-class CategoryCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ['id', 'name', 'description', 'created_at']
-        read_only_fields = ['created_at']
-
-    def validate_name(self, value):
-        # Проверка уникальности названия (без учёта регистра)
-        existing = Category.objects.filter(name__iexact=value)
-        if self.instance:
-            # При update исключаем текущий объект
-            existing = existing.exclude(pk=self.instance.pk)
-        if existing.exists():
-            raise serializers.ValidationError("Категория с таким названием уже существует.")
-        return value
-
-    def create(self, validated_data):
-        return Category.objects.create(**validated_data)
-
-    def update(self, instance, validated_data):
-        instance.name = validated_data.get('name', instance.name)
-        instance.description = validated_data.get('description', instance.description)
-        instance.save()
-        return instance
+# class CategoryCreateSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Category
+#         fields = ['id', 'name', 'description', 'created_at']
+#         read_only_fields = ['created_at']
+#
+#     def validate_name(self, value):
+#         # Проверка уникальности названия (без учёта регистра)
+#         existing = Category.objects.filter(name__iexact=value)
+#         if self.instance:
+#             # При update исключаем текущий объект
+#             existing = existing.exclude(pk=self.instance.pk)
+#         if existing.exists():
+#             raise serializers.ValidationError("Категория с таким названием уже существует.")
+#         return value
+#
+#     def create(self, validated_data):
+#         return Category.objects.create(**validated_data)
+#
+#     def update(self, instance, validated_data):
+#         instance.name = validated_data.get('name', instance.name)
+#         instance.description = validated_data.get('description', instance.description)
+#         instance.save()
+#         return instance
 
 # _____ HW_13 Задание 3: Использование вложенных сериализаторов
 # Создайте сериализатор для TaskDetailSerializer, который включает вложенный сериализатор для полного отображения связанных подзадач (SubTask). Сериализатор должен показывать все подзадачи, связанные с данной задачей.
@@ -100,4 +100,24 @@ class TaskDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = ['id', 'title', 'description', 'status', 'deadline', 'project', 'subtasks']
+
+# HW_16 Task 1. Реализация CRUD для категорий с использованием ModelViewSet, мягкое удаление.
+# Реализовать полный CRUD для модели категорий (Categories) с помощью ModelViewSet, добавить кастомный метод для подсчета количества задач в каждой категории. Реализовать систему мягкого удаления для категорий.
+# Задание 1: Реализация CRUD для категорий с использованием ModelViewSet
+# Шаги для выполнения:
+# Создайте CategoryViewSet, используя ModelViewSet для CRUD операций.
+# Добавьте маршрут для CategoryViewSet.
+# Добавьте кастомный метод count_tasks используя декоратор @action для подсчета количества задач, связанных с каждой категорией.
+class CategorySerializer(serializers.ModelSerializer): # Для чтения
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'is_deleted', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'is_deleted']
+        ref_name = "TaskManagerApp_CategorySerializer"
+
+class CategoryCreateUpdateSerializer(serializers.ModelSerializer): # Для создания и редактирования
+    class Meta:
+        model = Category
+        fields = ['name']
+        ref_name = "TaskManagerApp_CategoryCreateUpdateSerializer"
 
