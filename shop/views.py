@@ -1,8 +1,9 @@
 from django.shortcuts import render
 from rest_framework import viewsets
-from shop.models import Category, Supplier, Product, ProductDetail, Address
+from shop.models import Category, Supplier, Product, ProductDetail, Address, Customer
 from shop.serializers import CategorySerializer, SupplierSerializer, ProductSerializer, ProductCreateUpdateSerializer, \
-    ProductDetailSerializer, ProductDetailCreateUpdateSerializer, AddressSerializer
+    ProductDetailSerializer, ProductDetailCreateUpdateSerializer, AddressSerializer, CustomerSerializer, \
+    CustomerCreateUpdateSerializer
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
 
@@ -64,3 +65,11 @@ class ProductDetailViewSet(viewsets.ModelViewSet):
 class AddressViewSet(viewsets.ModelViewSet):
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
+
+class CustomerViewSet(viewsets.ModelViewSet):
+    queryset = Customer.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return CustomerSerializer
+        return CustomerCreateUpdateSerializer
