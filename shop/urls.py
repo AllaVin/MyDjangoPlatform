@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from shop.serializers import ProductDetailCreateUpdateSerializer
 from shop.views import CategoryViewSet, SupplierViewSet, ProductListCreateView, ProductRetrieveUpdateDestroyView, \
-    ProductDetailViewSet, AddressViewSet, CustomerViewSet
+    ProductDetailViewSet, AddressViewSet, CustomerViewSet, OrderViewSet
 
 # Создаем экземпляр роутера
 router = DefaultRouter()
@@ -16,6 +16,7 @@ router.register('supplier', SupplierViewSet) # http://127.0.0.1:8000/shop/suppli
 router.register('product-detail', ProductDetailViewSet) # http://127.0.0.1:8000/shop/product-detail/
 router.register('address', AddressViewSet)
 router.register('customer', CustomerViewSet)
+router.register('order', OrderViewSet)
 # Основной список маршрутов нашего приложения.
 # Мы просто включаем в него все URL, которые сгенерировал роутер.
 urlpatterns = [
