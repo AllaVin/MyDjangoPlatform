@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+from datetime import timedelta
 from pathlib import Path
 from rest_framework.pagination import PageNumberPagination
 import os
@@ -33,7 +33,6 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -48,6 +47,7 @@ INSTALLED_APPS = [
     "TaskManager_app",
     "shop",
     'drf_yasg',
+    'rest_framework.authtoken',
 
 ]
 
@@ -191,16 +191,37 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Отображение объектов должно идти в порядке убывания даты (от самого последнего добавленного объекта к самому первому)
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.CursorPagination',
-    'PAGE_SIZE': 6, # Будет использоваться постраничная пагинация, на одной странице — не более 5 подзадач.
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,  # Теперь по умолчанию на всех страницах будет 10 элементов
 
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    #     'PAGE_SIZE': 5, # Здесь page size работает как 'default_limit'
+    # 'PAGE_SIZE': 10,  # Здесь PAGE_SIZE работает как 'default_limit'
 
-    # _____ HW_15 Task 1. Подключаем django фильтрацию. Предварительно выполнив команду в терминале pip install django-filter
-    'DEFAULT_FILTER_BACKENDS': [
-            'django_filters.rest_framework.DjangoFilterBackend',
-            'rest_framework.filters.SearchFilter',
-            'rest_framework.filters.OrderingFilter',
-    ]
+    # Указываем полный путь к нашему классу!
+    # 'DEFAULT_PAGINATION_CLASS': 'config.paginations.CustomCursorPagination',
+    # 'PAGE_SIZE': 5,
+  # _____ HW_15 Task 1. Подключаем django фильтрацию. Предварительно выполнив команду в терминале pip install django-filter
+    # 'DEFAULT_FILTER_BACKENDS': [
+     #         'django_filters.rest_framework.DjangoFilterBackend',
+     #         'rest_framework.filters.SearchFilter',
+     #         'rest_framework.filters.OrderingFilter',
+     # ],
+
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+    'rest_framework_simplejwt.authentication.JWTAuthentication',
+    # 'rest_framework.authentication.TokenAuthentication',
+    # Если вы хотите использовать несколько методов, добавьте их здесь.
+    # Например: 'rest_framework.authentication.SessionAuthentication',
+    #           'rest_framework.authentication.BasicAuthentication',
+    ],
+
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5), # Как долго будет действовать доступ токена  у нас это 5 минут
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1), # Срок действия обновления токена. В данном случае 1 день
+    # Можно добавить и другие настройки, например, для токенов одноразового использования
 }

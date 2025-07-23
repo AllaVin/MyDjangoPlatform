@@ -1,75 +1,108 @@
 from django.contrib import admin
 from django.utils import timezone
+
 from library.models import (
-    Author, Book, Library, Category, Member, Posts, Borrow,
-    Review, AuthorDetail, Event, EventParticipant, Publisher, Genre
+    Author,
+    Publisher,
+    Book,
+    Category,
+    Genre,
+    Library,
+    Member,
+    Post,
+    Borrow,
+    Review,
+    AuthorDetail,
+    Event,
+    EventParticipant,
+    User,
+    UserInfo,
+    Actor,
+    Director,
+    Movie,
 )
 
 
+# Register your models here.
 admin.site.register(Author)
+# admin.site.register(Book)
 admin.site.register(Category)
-admin.site.register(Posts)
+admin.site.register(Library)
+admin.site.register(Member)
+admin.site.register(Post)
 admin.site.register(Borrow)
 admin.site.register(Review)
 admin.site.register(AuthorDetail)
 admin.site.register(Event)
 admin.site.register(EventParticipant)
+admin.site.register(Genre)
 
-@admin.register(Library)
-class LibraryAdmin(admin.ModelAdmin):
-    list_display = ('name', "location", "library_website")
-    search_fields = ('location',)
-    ordering = ('-name',)
-    list_per_page = 2
-
-@admin.register(Member)
-class MemberAdmin(admin.ModelAdmin):
-    list_display = ('name', "surname", 'email', 'gender', 'date_of_birth', 'age', 'role', 'is_active')
-    search_fields = ('surname',)
-    ordering = ('name',)
-    list_per_page = 2
-
-# Inline книги в админке издателя
-class BookInline(admin.TabularInline):
-    model = Book
-    fk_name = 'publisher'
-    extra = 1
-
-@admin.register(Publisher)
-class PublisherAdmin(admin.ModelAdmin):
-    list_display = ['name', 'established_date']
-    inlines = [BookInline]
-
-@admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
-    list_display = ('title', 'author', 'publisher', 'publishing_date', 'is_bestseller')
-    list_filter = ('is_bestseller', 'genres')
-    search_fields = ('title', 'author__name', 'publisher__name')
-    ordering = ('-publishing_date',)
-    filter_horizontal = ('genres',)
-    actions = ['update_created_at']
-
-    fieldsets = (
-        ('Основная информация', {
-            'fields': ('title', 'author', 'genre', 'genres', 'short_description')
-        }),
-        ('Издательство и библиотека', {
-            'fields': ('publisher', 'publisher_real', 'category', 'library')
-        }),
-        ('Даты и статус', {
-            'fields': ('publishing_date', 'created_at', 'is_bestseller')
-        }),
-        ('Цены', {
-            'fields': ('price', 'discounted_price')
-        }),
-    )
-
     def update_created_at(self, request, queryset):
         queryset.update(created_at=timezone.now())
-    update_created_at.short_description = "Update created_at to current time"
 
-@admin.register(Genre)
-class GenreAdmin(admin.ModelAdmin):
-    list_display = ('name',)
-    search_fields = ('name',)
-    ordering = ('name',)
+    update_created_at.short_description = 'Update "created at" to current time'
+
+    actions = [update_created_at]
+
+class BookInline(admin.StackedInline):
+    model = Book
+    extra = 1
+
+class PublisherAdmin(admin.ModelAdmin):
+    inlines = [BookInline]
+
+admin.site.register(Publisher, PublisherAdmin)
+admin.site.register(Book, BookAdmin)
+
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    # readonly_fields = ['age']
+    list_display = ('first_name', 'last_name', 'country', 'rating')
+    search_fields = ['country', 'last_name']
+    list_filter = ['rating']
+    fields = ['rating', 'country']
+    list_per_page = 2
+
+    def set_rating_to_0(self, request, queryset):
+        queryset.update(rating=0)
+
+    set_rating_to_0.short_description = 'Set users rating to 0'
+    actions = [set_rating_to_0]
+
+
+class MovieInline(admin.TabularInline):
+    model = Movie
+    extra = 2
+
+class DirectorAdmin(admin.ModelAdmin):
+    inlines = [MovieInline]
+
+
+admin.site.register(UserInfo)
+admin.site.register(Actor)
+admin.site.register(Movie)
+admin.site.register(Director, DirectorAdmin)
+
+
+# # custom admin register for Book
+# @admin.register(Book)
+# class BookAdmin(admin.ModelAdmin):
+    # # displayed fields
+#     list_display = ('title', 'author', 'rating_display')
+
+
+#     def rating_display(self, obj):
+#         return obj.rating
+
+#     rating_display.short_description = "Rating"
+
+# @admin.register(Library)
+# class LibraryAdmin(admin.ModelAdmin):
+#     list_display = ('title', 'location', 'website')
+
+# @admin.register(Event)
+# class EventAdmin(admin.ModelAdmin):
+    # # displayed fields
+#     list_display = ('title', 'description', 'timestamp', 'library')
