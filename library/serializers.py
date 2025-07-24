@@ -56,6 +56,7 @@ class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = '__all__'
+        read_only_fields = ['owner'] # Делаем поле 'owner' только для чтения
 
     def to_representation(self, instance):
         # Получаем стандартное представление объекта

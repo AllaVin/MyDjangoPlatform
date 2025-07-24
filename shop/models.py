@@ -1,5 +1,9 @@
 from itertools import product
+
+from django.contrib.auth.models import User
 from django.db import models
+
+from config import settings
 
 
 class Category(models.Model):
@@ -90,10 +94,20 @@ class Customer(models.Model):
 class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name='orders')
     order_date = models.DateTimeField(auto_now_add=True, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        related_name='orders'
+    )
 
     class Meta:
         ordering = ['-order_date']
         get_latest_by = 'order_date'
+        # Добавляем кастомное разрешение
+        permissions = [
+            ("can_view_order_statistics", "Can view order statistics"),
+        ]
 
     def __str__(self):
         return f"Order {self.id} by {self.customer}"     # self.customer -- Здесь автоматически подхватит return f"{self.first_name} {self.last_name}"

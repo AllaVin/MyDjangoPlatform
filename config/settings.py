@@ -10,9 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 from datetime import timedelta
+from email.policy import default
 from pathlib import Path
 from rest_framework.pagination import PageNumberPagination
 import os
+import environ
+
+env = environ.Env()
+environ.Env.read_env()  # чтобы подгружались значения из .env
 # import environ
 # from environ import Env
 
@@ -114,6 +119,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = env('AUTH_USER_MODEL', default='auth.User')
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/

@@ -28,14 +28,15 @@ from rest_framework.authtoken.views import obtain_auth_token
 from config import settings
 
 schema_view = get_schema_view(
-   openapi.Info(
-      title="TaskManager API",
-      default_version='v1',
-      description="Документация и тестирование API для TaskManager_app",
-      contact=openapi.Contact(email="matyashalla@gmail.com"),
+    openapi.Info(
+        title="TaskManager API",
+        default_version='v1',
+        description="Документация и тестирование API для TaskManager_app",
+        contact=openapi.Contact(email="matyashalla@gmail.com"),
+        license=openapi.License(name="BSD License"),
    ),
-   public=True,
-   permission_classes=[permissions.AllowAny],
+    public=True,
+    permission_classes=[permissions.AllowAny],
 )
 
 
