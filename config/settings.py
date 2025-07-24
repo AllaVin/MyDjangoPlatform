@@ -45,9 +45,11 @@ INSTALLED_APPS = [
     "library",
     "project",
     "TaskManager_app",
-    "shop",
+
     'drf_yasg',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt',
+    "shop",
 
 ]
 
@@ -192,7 +194,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,  # Теперь по умолчанию на всех страницах будет 10 элементов
+    'PAGE_SIZE': 6,  # Теперь по умолчанию на всех страницах будет 10 элементов
 
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     # 'PAGE_SIZE': 10,  # Здесь PAGE_SIZE работает как 'default_limit'
@@ -208,7 +210,7 @@ REST_FRAMEWORK = {
      # ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
-    'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     # 'rest_framework.authentication.TokenAuthentication',
     # Если вы хотите использовать несколько методов, добавьте их здесь.
     # Например: 'rest_framework.authentication.SessionAuthentication',
@@ -221,7 +223,11 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5), # Как долго будет действовать доступ токена  у нас это 5 минут
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1), # Срок действия обновления токена. В данном случае 1 день
-    # Можно добавить и другие настройки, например, для токенов одноразового использования
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=6),  # токен живет 6 часов
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),     # refresh живет 1 день
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }

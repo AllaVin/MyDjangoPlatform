@@ -17,11 +17,15 @@ Including another URLconf
 from django.urls import path, include
 # from project.views import test
 from django.urls import path, re_path, include
+from django.conf.urls.static import static
 from django.contrib import admin
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework.authtoken.views import obtain_auth_token
+
+from config import settings
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -55,5 +59,10 @@ urlpatterns = [
     path('shop/', include('shop.urls')), # "category": "http://127.0.0.1:8000/shop/category/"
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/', include('TaskManager_app.urls')),  # API эндпоинты
+                        # POST /api/token/ — получить токен (нужны username и password).
+                        # POST /api/token/refresh/ — обновить токен.
+
+    path('get-token/', obtain_auth_token, name='get_token'), # Маршрут для получения токена
 ]
 

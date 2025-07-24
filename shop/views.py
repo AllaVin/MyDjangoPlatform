@@ -7,6 +7,10 @@ from shop.serializers import CategorySerializer, SupplierSerializer, ProductSeri
     OrderItemCreateUpdateSerializer
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, IsAuthenticatedOrReadOnly
+from rest_framework.authentication import BasicAuthentication
+from rest_framework.authentication import TokenAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 class CategoryViewSet(viewsets.ModelViewSet):
     """
@@ -33,6 +37,18 @@ class ProductListCreateView(ListCreateAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['category', 'price'] # Пример ссылки с фильтрацией по категории http://127.0.0.1:8000/shop/product/?category=1
 
+    # Явно указываем классы аутентификации для этого представления.
+    # Это переопределит глобальные настройки, если они есть.
+    # authentication_classes = [BasicAuthentication]
+    # authentication_classes = [TokenAuthentication]
+    authentication_classes = [JWTAuthentication]
+    # Явно указываем классы разрешений для этого представления.
+    # Пользователь должен быть аутентифицирован для доступа.
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [AllowAny]
+    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     # Этот метод позволяет нам динамически выбирать сериалайзер
     def get_serializer_class(self):
         # Для безопасных методов (только чтение), таких как GET
@@ -47,6 +63,13 @@ class ProductRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     """
     queryset = Product.objects.all()
 
+    # Явно указываем классы разрешений для этого представления.
+    # Пользователь должен быть аутентифицирован для доступа.
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [AllowAny]
+    permission_classes = [IsAdminUser]
+    # permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get_serializer_class(self):
         # Для чтения данных
         if self.request.method == 'GET':
@@ -56,6 +79,13 @@ class ProductRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
 
 class ProductDetailViewSet(viewsets.ModelViewSet):
     queryset = ProductDetail.objects.all()
+
+    # Явно указываем классы разрешений для этого представления.
+    # Пользователь должен быть аутентифицирован для доступа.
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [AllowAny]
+    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     # Этот метод позволяет нам динамически выбирать сериалайзер
     def get_serializer_class(self):
@@ -69,10 +99,24 @@ class AddressViewSet(viewsets.ModelViewSet):
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
 
+    # Явно указываем классы разрешений для этого представления.
+    # Пользователь должен быть аутентифицирован для доступа.
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [AllowAny]
+    permission_classes = [IsAdminUser]
+    # permission_classes = [IsAuthenticatedOrReadOnly]
+
 class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['first_name', 'last_name']
+
+    # Явно указываем классы разрешений для этого представления.
+    # Пользователь должен быть аутентифицирован для доступа.
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [AllowAny]
+    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -82,6 +126,13 @@ class CustomerViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
 
+    # Явно указываем классы разрешений для этого представления.
+    # Пользователь должен быть аутентифицирован для доступа.
+    permission_classes = [IsAuthenticated]
+    # permission_classes = [AllowAny]
+    # permission_classes = [IsAdminUser]
+    # permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return OrderSerializer
@@ -90,6 +141,13 @@ class OrderViewSet(viewsets.ModelViewSet):
 
 class OrderItemViewSet(viewsets.ModelViewSet):
     queryset = OrderItem.objects.all()
+
+    # Явно указываем классы разрешений для этого представления.
+    # Пользователь должен быть аутентифицирован для доступа.
+    permission_classes = [IsAuthenticated]
+    # permission_classes = [AllowAny]
+    # permission_classes = [IsAdminUser]
+    # permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
