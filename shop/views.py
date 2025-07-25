@@ -6,7 +6,7 @@ from shop.permissions import IsOwnerOrReadOnly, CanViewOrderStatistics
 from shop.serializers import CategorySerializer, SupplierSerializer, ProductSerializer, ProductCreateUpdateSerializer, \
     ProductDetailSerializer, ProductDetailCreateUpdateSerializer, AddressSerializer, CustomerSerializer, \
     CustomerCreateUpdateSerializer, OrderSerializer, OrderCreateUpdateSerializer, OrderItemSerializer, \
-    OrderItemCreateUpdateSerializer
+    OrderItemCreateUpdateSerializer, UserRegisterSerializer
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, IsAuthenticatedOrReadOnly
@@ -17,6 +17,24 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+
+
+# Вспомогательная функция для установки cookie
+def set_jwt_cookies(response, user):
+    refresh = RefreshToken.for_user(user)
+    access_token = refresh.access_token
+
+    response.set_cookie(
+        key='access_token',
+        value=str(access_token),
+        httponly=True, secure=False, samesite='Lax'
+    )
+    response.set_cookie(
+        key='refresh_token',
+        value=str(refresh),
+        httponly=True, secure=False, samesite='Lax'
+    )
+
 class CategoryViewSet(viewsets.ModelViewSet):
     """
     Это представление предоставляет полный набор действий (CRUD) для модели Category.
@@ -197,28 +215,65 @@ class LoginView(APIView):
         user = authenticate(request, username=username, password=password)
 
         if user:
-            # Если пользователь найден, создаем для него токены
-            refresh = RefreshToken.for_user(user)
-            access_token = refresh.access_token
+         """# Создаем успешный ответ """
+        response = Response(status=status.HTTP_200_OK)
+        # ВЫНЕСЛИ В ОТДЕЛЬНУЮ ФУНКЦИЮ
+        # # Если пользователь найден, создаем для него токены
+        # refresh = RefreshToken.for_user(user)
+        # access_token = refresh.access_token
+        #
+        #
+        # # Устанавливаем access_token в cookie
+        # response.set_cookie(
+        #     key='access_token',
+        #     value=str(access_token),
+        #     httponly=True,  # Защита от доступа через JavaScript
+        #     secure=False,   # В продакшене должно быть True (только для HTTPS)
+        #     samesite='Lax'
+        # )
+        # # Устанавливаем refresh_token в cookie
+        # response.set_cookie(
+        #     key='refresh_token',
+        #     value=str(refresh),
+        #     httponly=True,
+        #     secure=False,   # В продакшене должно быть True
+        #     samesite='Lax'
+        # )
 
-            # Создаем успешный ответ
-            response = Response(status=status.HTTP_200_OK)
+        set_jwt_cookies(response, user)
 
-        # Устанавливаем access_token в cookie
-        response.set_cookie(
-            key='access_token',
-            value=str(access_token),
-            httponly=True,  # Защита от доступа через JavaScript
-            secure=False,  # В продакшене должно быть True (только для HTTPS)
-            samesite='Lax'
-        )
-        # Устанавливаем refresh_token в cookie
-        response.set_cookie(
-            key='refresh_token',
-            value=str(refresh),
-            httponly=True,
-            secure=False,  # В продакшене должно быть True
-            samesite='Lax'
-        )
         return response
 
+
+
+class RegistrationView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = UserRegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            # Создаем ответ с данными пользователя
+            response = Response({
+                'user': {
+                    'username': user.username,
+                    'email': user.email
+                }
+            }, status=status.HTTP_201_CREATED)
+
+            # Вызываем нашу функцию, чтобы добавить cookie с токенами в ответ
+            set_jwt_cookies(response, user)
+
+            return response
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LogoutView(APIView):
+    def post(self, request, *args, **kwargs):
+        # Создаем пустой ответ
+        response = Response(data={'message': 'Logout successful'},status=status.HTTP_204_NO_CONTENT)
+        # Отправляем команду браузеру на удаление cookie
+        response.delete_cookie('access_token')
+        response.delete_cookie('refresh_token')
+        return response

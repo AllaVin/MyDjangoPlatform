@@ -117,4 +117,19 @@ class OrderItemCreateUpdateSerializer(serializers.ModelSerializer):
 
         return value
 
+class UserRegisterSerializer(serializers.ModelSerializer):
+    # Делаем поле пароля только для записи (его нельзя будет прочитать из API)
+    password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
 
+    class Meta:
+        model = User
+        fields = ['username', 'password', 'email']
+
+    def create(self, validated_data):
+        # Используем create_user, чтобы пароль был правильно захеширован
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            password=validated_data['password'],
+            email=validated_data.get('email', '')
+        )
+        return user

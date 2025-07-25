@@ -3,7 +3,8 @@ from rest_framework.routers import DefaultRouter
 
 from shop.serializers import ProductDetailCreateUpdateSerializer
 from shop.views import CategoryViewSet, SupplierViewSet, ProductListCreateView, ProductRetrieveUpdateDestroyView, \
-    ProductDetailViewSet, AddressViewSet, CustomerViewSet, OrderViewSet, OrderItemViewSet, OrderStatisticsView
+    ProductDetailViewSet, AddressViewSet, CustomerViewSet, OrderViewSet, OrderItemViewSet, OrderStatisticsView, \
+    LoginView, RegistrationView, LogoutView
 
 # Создаем экземпляр роутера
 router = DefaultRouter()
@@ -26,4 +27,7 @@ urlpatterns = [
     path('product/<int:pk>/', ProductRetrieveUpdateDestroyView.as_view(), name='product-detail'), # http://127.0.0.1:8000/shop/product-detail/1/
     # Для обновления детальной информации о продукте открыв его с primary key
     path('order-statistics/', OrderStatisticsView.as_view(), name='order-statistics'),
+    path('login/', LoginView.as_view(), name='shop-login'),
+    path('registration/', RegistrationView.as_view(), name='shop-registration'), # http://127.0.0.1:8000/shop/registration/
+    path('logout/', LogoutView.as_view(), name='shop-logout'),
 ]
