@@ -1,5 +1,6 @@
+from django.contrib.auth import authenticate
 from django.shortcuts import render
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from shop.models import Category, Supplier, Product, ProductDetail, Address, Customer, Order, OrderItem
 from shop.permissions import IsOwnerOrReadOnly, CanViewOrderStatistics
 from shop.serializers import CategorySerializer, SupplierSerializer, ProductSerializer, ProductCreateUpdateSerializer, \
@@ -15,6 +16,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 class CategoryViewSet(viewsets.ModelViewSet):
     """
     Это представление предоставляет полный набор действий (CRUD) для модели Category.
@@ -182,3 +184,41 @@ class OrderStatisticsView(APIView):
             'total_orders': total_orders,
         }
         return Response(data)
+
+class LoginView(APIView):
+    # Разрешаем доступ всем (даже анонимным пользователям), чтобы они могли войти
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        # Проверяем, существует ли пользователь с таким логином и паролем
+        user = authenticate(request, username=username, password=password)
+
+        if user:
+            # Если пользователь найден, создаем для него токены
+            refresh = RefreshToken.for_user(user)
+            access_token = refresh.access_token
+
+            # Создаем успешный ответ
+            response = Response(status=status.HTTP_200_OK)
+
+        # Устанавливаем access_token в cookie
+        response.set_cookie(
+            key='access_token',
+            value=str(access_token),
+            httponly=True,  # Защита от доступа через JavaScript
+            secure=False,  # В продакшене должно быть True (только для HTTPS)
+            samesite='Lax'
+        )
+        # Устанавливаем refresh_token в cookie
+        response.set_cookie(
+            key='refresh_token',
+            value=str(refresh),
+            httponly=True,
+            secure=False,  # В продакшене должно быть True
+            samesite='Lax'
+        )
+        return response
+

@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     "library",
     "project",
     "TaskManager_app",
-
+    'rest_framework_simplejwt.token_blacklist',
     'drf_yasg',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
@@ -66,6 +66,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'shop.middleware.JWTAuthenticationMiddleware',
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -229,11 +230,11 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=6),  # токен живет 6 часов
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),     # refresh живет 1 день
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  # токен живет 6 часов
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=10),     # refresh живет 1 день
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
-    'ALGORITHM': 'HS256',
-    'SIGNING_KEY': SECRET_KEY,
+    # 'ALGORITHM': 'HS256',
+    # 'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
