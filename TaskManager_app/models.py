@@ -1,4 +1,7 @@
+from django.contrib.auth.models import User
 from django.db import models
+
+from TaskManager_app.permissions import IsAdminOrOwner
 
 STATUS_CHOICES = [
     ('New', 'New'),
@@ -48,6 +51,7 @@ class Task(models.Model):
     priority = models.CharField(max_length=15, choices=PRIORITY_CHOICES, default='Low')
     deadline = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tasks', null=True)
 
     class Meta:
         db_table = 'TaskManager_app_task'  # Задаем имя таблицы в базе данных

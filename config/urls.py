@@ -58,11 +58,11 @@ urlpatterns = [
     # Practicum 8
     # Приложение shop
     path('shop/', include('shop.urls')), # "category": "http://127.0.0.1:8000/shop/category/"
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'), # POST /api/token/ — получить токен (нужны username и password).
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), # POST /api/token/refresh/ — обновить токен.
     path('api/', include('TaskManager_app.urls')),  # API эндпоинты
-                        # POST /api/token/ — получить токен (нужны username и password).
-                        # POST /api/token/refresh/ — обновить токен.
+
+
 
     path('get-token/', obtain_auth_token, name='get_token'), # Маршрут для получения токена
 ]

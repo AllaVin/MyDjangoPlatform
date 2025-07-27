@@ -138,7 +138,7 @@ class Task(models.Model):
     tags = models.ManyToManyField(Tag, related_name='tasks', blank=True, default=None)
 
     # Relation to User:
-    assignee = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='tasks', null=True, blank=True)
+    assignee = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='project_tasks', null=True, blank=True)
 
 
 def __str__(self):

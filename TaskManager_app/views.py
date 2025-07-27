@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.db.models import Q
 from TaskManager_app.models import Task, Project, SubTask, Category
 from TaskManager_app.serializers import TaskCreateSerializer, AllTasksListSerializer, TaskByIDSerializer, \
-    SubTaskCreateSerializer, CategorySerializer, CategoryCreateUpdateSerializer
+    SubTaskCreateSerializer, CategorySerializer, CategoryCreateUpdateSerializer, TaskListSerializer
 from rest_framework.decorators import api_view, action
 from rest_framework import status
 from rest_framework.response import Response
@@ -19,6 +19,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from TaskManager_app.serializers import TaskCreateSerializer, TaskByIDSerializer
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from .permissions import IsAdminOrOwner
 
 # _____ Задание 5 HW_13: Создание классов представлений
 # Создайте классы представлений для работы с подзадачами (SubTasks), включая создание, получение, обновление и
@@ -365,20 +366,28 @@ class FilteredSubTaskListView(generics.ListAPIView):
 
 class TaskListCreateView(generics.ListCreateAPIView):
     queryset = Task.objects.all()
-    serializer_class = TaskCreateSerializer
-    permission_classes = [IsAuthenticated]  # доступ только авторизованным
-    # permission_classes = [IsAdminUser] # Если надо дать доступ только админам
-
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['status', 'deadline']
     search_fields = ['title', 'description']
     ordering_fields = ['created_at']
     ordering = ['-created_at']
 
+    def get_serializer_class(self):
+        # Для GET — список с пагинацией
+        if self.request.method == 'GET':
+            return TaskListSerializer
+        # Для POST — создание задачи
+        return TaskCreateSerializer
+
+    # При создании задачи автоматом проставляем владельца
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
 class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskByIDSerializer
     lookup_field = 'id'
+    permission_classes = [IsAdminOrOwner]  # Только владелец или админ
 
 # _____ HW_15 Task 2. В соответствии с заданием заменяю текущие представления SubTaskListCreateView (для получения и создания списка подзадач)
 # и SubTaskDetailUpdateDeleteView (для получения, редактирования и удаления одной подзадачи), которые написаны на APIView, на Generic Views
@@ -412,6 +421,7 @@ class SubTaskDetailUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
 # Добавьте кастомный метод count_tasks используя декоратор @action для подсчета количества задач, связанных с каждой категорией.
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.filter(is_deleted=False)
+    permission_classes = [IsAdminUser]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -427,3 +437,18 @@ class CategoryViewSet(viewsets.ModelViewSet):
         category = self.get_object()
         count = Task.objects.filter(categories=category).count()
         return Response({"category_id": category.id, "task_count": count})
+
+# _______ access_token testing
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({
+            "username": request.user.username,
+            "is_staff": request.user.is_staff,
+            "is_superuser": request.user.is_superuser
+        })

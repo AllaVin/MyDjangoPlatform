@@ -201,15 +201,13 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 6,  # Теперь по умолчанию на всех страницах будет 10 элементов
-
+    'PAGE_SIZE': 5,  # размер страницы
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    # 'PAGE_SIZE': 10,  # Здесь PAGE_SIZE работает как 'default_limit'
 
     # Указываем полный путь к нашему классу!
     # 'DEFAULT_PAGINATION_CLASS': 'config.paginations.CustomCursorPagination',
     # 'PAGE_SIZE': 5,
-  # _____ HW_15 Task 1. Подключаем django фильтрацию. Предварительно выполнив команду в терминале pip install django-filter
+    # _____ HW_15 Task 1. Подключаем django фильтрацию. Предварительно выполнив команду в терминале pip install django-filter
     # 'DEFAULT_FILTER_BACKENDS': [
      #         'django_filters.rest_framework.DjangoFilterBackend',
      #         'rest_framework.filters.SearchFilter',
@@ -225,16 +223,16 @@ REST_FRAMEWORK = {
     ],
 
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.IsAuthenticated', # По умолчанию — доступ только авторизованным
     ],
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  # токен живет 6 часов
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=10),     # refresh живет 1 день
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=6),  # токен живет 6 часов
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=10),     # refresh живет 1 день. Для обновления Access без повторного логина.
+    'ROTATE_REFRESH_TOKENS': True, # refresh обновляется при каждом обновлении токена
+    'BLACKLIST_AFTER_ROTATION': True,  # защита: старые refresh токены блокируются.
     # 'ALGORITHM': 'HS256',
     # 'SIGNING_KEY': SECRET_KEY,
-    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_TYPES': ('Bearer',), # стандартный тип заголовка для JWT.
 }

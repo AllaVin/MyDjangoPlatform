@@ -3,7 +3,7 @@ from TaskManager_app.serializers import AllTasksListSerializer
 # from TaskManager_app.views import new_task
 # from TaskManager_app.views import all_tasks_list
 # from TaskManager_app.views import view_task_by_id
-from TaskManager_app.views import task_count
+from TaskManager_app.views import task_count, ProfileView
 from TaskManager_app.views import task_per_status
 from TaskManager_app.views import overdue_tasks_count
 from TaskManager_app.views import SubTaskDetailUpdateDeleteView, SubTaskListCreateView, FilteredSubTaskListView
@@ -63,5 +63,5 @@ urlpatterns = [
     # _____ HW_15 Task 1.
     path('tasks/', TaskListCreateView.as_view(), name='task-list-create'),
     path('tasks/<int:id>/', TaskDetailView.as_view(), name='task-detail'),
+    path('api/profile/', ProfileView.as_view(), name='profile'), # _______ access_token testingç
 ]
-urlpatterns += router.urls

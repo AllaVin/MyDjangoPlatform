@@ -20,9 +20,12 @@ class TaskCreateSerializer(serializers.ModelSerializer):
 
 
 class TaskListSerializer(serializers.ModelSerializer):
+    owner = serializers.StringRelatedField()
+
     class Meta:
         model = Task
-        fields = ['title', 'description', 'status', 'deadline', 'project']
+        fields = ['id', 'title', 'description', 'status', 'deadline', 'project', 'owner']
+
 
 
 class AllTasksListSerializer(serializers.ModelSerializer):
