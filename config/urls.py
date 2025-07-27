@@ -24,6 +24,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.authtoken.views import obtain_auth_token
+from TaskManager_app.views import ProfileView
 
 from config import settings
 
@@ -58,12 +59,11 @@ urlpatterns = [
     # Practicum 8
     # Приложение shop
     path('shop/', include('shop.urls')), # "category": "http://127.0.0.1:8000/shop/category/"
+
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'), # POST /api/token/ — получить токен (нужны username и password).
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), # POST /api/token/refresh/ — обновить токен.
     path('api/', include('TaskManager_app.urls')),  # API эндпоинты
-
-
-
-    path('get-token/', obtain_auth_token, name='get_token'), # Маршрут для получения токена
+    # path('get-token/', obtain_auth_token, name='get_token'), # Маршрут для получения токена
+    path('api/profile/', ProfileView.as_view(), name='profile'),
 ]
 

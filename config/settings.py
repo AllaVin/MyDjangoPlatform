@@ -45,15 +45,19 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
+    # DRF
     "rest_framework",
+    "rest_framework.authtoken",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "django_filters",
+    "drf_yasg",
+
+    # Мои приложения
     "library",
     "project",
     "TaskManager_app",
-    'rest_framework_simplejwt.token_blacklist',
-    'drf_yasg',
-    'rest_framework.authtoken',
-    'rest_framework_simplejwt',
     "shop",
 
 ]
@@ -200,8 +204,22 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Отображение объектов должно идти в порядке убывания даты (от самого последнего добавленного объекта к самому первому)
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 5,  # размер страницы
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'rest_framework.authentication.BasicAuthentication',
+    # 'rest_framework.authentication.TokenAuthentication',
+    # Если вы хотите использовать несколько методов, добавьте их здесь.
+    # Например: 'rest_framework.authentication.SessionAuthentication',
+    #           'rest_framework.authentication.BasicAuthentication',
+    ],
+    # Доступ по умолчанию только для авторизованных
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # Пагинация
+    'DEFAULT_PAGINATION_CLASS': 'config.paginations.BookCursorPagination',
+    'PAGE_SIZE': 5,
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
 
     # Указываем полный путь к нашему классу!
@@ -213,26 +231,18 @@ REST_FRAMEWORK = {
      #         'rest_framework.filters.SearchFilter',
      #         'rest_framework.filters.OrderingFilter',
      # ],
-
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    # 'rest_framework.authentication.TokenAuthentication',
-    # Если вы хотите использовать несколько методов, добавьте их здесь.
-    # Например: 'rest_framework.authentication.SessionAuthentication',
-    #           'rest_framework.authentication.BasicAuthentication',
-    ],
-
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated', # По умолчанию — доступ только авторизованным
+    # Фильтрация и поиск
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
     ],
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=6),  # токен живет 6 часов
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=10),     # refresh живет 1 день. Для обновления Access без повторного логина.
-    'ROTATE_REFRESH_TOKENS': True, # refresh обновляется при каждом обновлении токена
-    'BLACKLIST_AFTER_ROTATION': True,  # защита: старые refresh токены блокируются.
-    # 'ALGORITHM': 'HS256',
-    # 'SIGNING_KEY': SECRET_KEY,
-    'AUTH_HEADER_TYPES': ('Bearer',), # стандартный тип заголовка для JWT.
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }

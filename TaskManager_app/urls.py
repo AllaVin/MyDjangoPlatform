@@ -62,6 +62,6 @@ urlpatterns = [
 
     # _____ HW_15 Task 1.
     path('tasks/', TaskListCreateView.as_view(), name='task-list-create'),
-    path('tasks/<int:id>/', TaskDetailView.as_view(), name='task-detail'),
-    path('api/profile/', ProfileView.as_view(), name='profile'), # _______ access_token testingç
+    path('tasks/<int:id>', TaskDetailView.as_view(), name='task-detail'),
+    path('api/profile/', ProfileView.as_view(), name='profile'), # access_token testing
 ]

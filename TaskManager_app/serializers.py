@@ -1,6 +1,6 @@
 from datetime import date
 from rest_framework import serializers
-from TaskManager_app.models import Task, SubTask, Category
+from TaskManager_app.models import Task, SubTask, Category, Project
 
 
 class TaskCreateSerializer(serializers.ModelSerializer):
@@ -17,6 +17,20 @@ class TaskCreateSerializer(serializers.ModelSerializer):
             if value < date.today():
                 raise serializers.ValidationError("Deadline не может быть в прошлом.")
             return value
+
+        def validate_project(self, value):
+            """Проверяем, что проект существует и не удалён"""
+            if not Project.objects.filter(id=value.id).exists():
+                raise serializers.ValidationError("Указанный проект не существует.")
+            return value
+
+        def create(self, validated_data):
+            """Проставляем владельца и создаём задачу"""
+            user = self.context['request'].user
+            if not user.is_authenticated:
+                raise serializers.ValidationError("Только авторизованные пользователи могут создавать задачи.")
+            validated_data['owner'] = user
+            return super().create(validated_data)
 
 
 class TaskListSerializer(serializers.ModelSerializer):
@@ -35,9 +49,11 @@ class AllTasksListSerializer(serializers.ModelSerializer):
 
 
 class TaskByIDSerializer(serializers.ModelSerializer):
+    owner = serializers.StringRelatedField()
+
     class Meta:
         model = Task
-        fields = ['title', 'description', 'status', 'deadline', 'project']
+        fields = ['id', 'title', 'description', 'status', 'deadline', 'project', 'owner']
 
 
 class TaskCountSerializer(serializers.ModelSerializer):

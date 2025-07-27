@@ -1,5 +1,5 @@
-from rest_framework.pagination import PageNumberPagination, CursorPagination
+from rest_framework.pagination import CursorPagination
 
 class BookCursorPagination(CursorPagination):
     page_size = 5
-    ordering = 'published_at'
+    ordering = '-created_at'

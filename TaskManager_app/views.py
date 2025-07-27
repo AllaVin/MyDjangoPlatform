@@ -38,7 +38,6 @@ from TaskManager_app.models import SubTask
 # Если был передан день недели (например вторник) - выводить список задач только на этот день недели.
 from datetime import datetime
 import calendar
-from rest_framework.pagination import PageNumberPagination
 
 # _____ Задание 1 HW_12: Эндпоинт для создания задачи
 # Создайте эндпоинт для создания новой задачи. Задача должна быть создана с полями title, description, status, и deadline.
@@ -373,12 +372,9 @@ class TaskListCreateView(generics.ListCreateAPIView):
     ordering = ['-created_at']
 
     def get_serializer_class(self):
-        # Для GET — список с пагинацией
         if self.request.method == 'GET':
             return TaskListSerializer
-        # Для POST — создание задачи
         return TaskCreateSerializer
-
     # При создании задачи автоматом проставляем владельца
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
