@@ -248,3 +248,6 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True, # ______ HW_20
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@taskmanager.local'
