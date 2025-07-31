@@ -14,11 +14,16 @@ from rest_framework.routers import DefaultRouter
 from TaskManager_app.views import (
     task_count, task_per_status, overdue_tasks_count,
     SubTaskDetailUpdateDeleteView, SubTaskListCreateView, FilteredSubTaskListView,
-    tasks_by_weekday, CategoryViewSet, TaskViewSet, ProfileView
+    tasks_by_weekday, CategoryViewSet, TaskViewSet, ProfileView, RegisterView, LogoutView
 )
 # from TaskManager_app.views import test, show_new_tasks
 # from TaskManager_app.views import test
 # from TaskManager_app.views import show_new_tasks, show_overdue_done_subtasks
+from rest_framework_simplejwt.views import TokenObtainPairView # Используем SimpleJWT для входа в аккаунт
+from .views import CustomTokenObtainPairView
+
+
+
 router = DefaultRouter()
 router.register('categories', CategoryViewSet, basename='categories')
 router.register('tasks', TaskViewSet, basename='tasks')
@@ -79,4 +84,12 @@ urlpatterns = [
 
     # _____ Подключаем router
     path('', include(router.urls)),
+
+    # _____ HW_20
+    path('register/', RegisterView.as_view(), name='register'),
+
+    # _____ HW_20
+    # path('api/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('logout/', LogoutView.as_view(), name='logout'),
+    path('login/', CustomTokenObtainPairView.as_view(), name='custom_token_obtain_pair'),
 ]

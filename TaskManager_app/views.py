@@ -14,6 +14,7 @@ from django.utils.timezone import now
 from rest_framework.pagination import PageNumberPagination
 
 from config.paginations import BookCursorPagination
+from . import permissions
 from .filters import SubTaskFilter
 from rest_framework import generics, filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -22,6 +23,19 @@ from TaskManager_app.serializers import TaskCreateSerializer, TaskByIDSerializer
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from TaskManager_app.permissions import IsAdminOrOwner
+
+# _____ HW_20
+from rest_framework.permissions import AllowAny
+from .serializers import RegisterSerializer
+from django.contrib.auth.models import User
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.views import APIView
+from rest_framework import status
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+
 
 # _____ Задание 5 HW_13: Создание классов представлений
 # Создайте классы представлений для работы с подзадачами (SubTasks), включая создание, получение, обновление и
@@ -525,4 +539,52 @@ class SubTaskViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminOrOwner]
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)  # 🔹 Проставляем владельца
+        serializer.save(owner=self.request.user)  # Проставляем владельца
+
+# _____ HW_20
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = RegisterSerializer
+    permission_classes = [AllowAny]
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request):
+        refresh_token = request.data.get("refresh")
+        if not refresh_token:
+            return Response({"detail": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response(
+                {"detail": "Successfully logged out. Token has been blacklisted."},
+                status=status.HTTP_205_RESET_CONTENT
+            )
+        except Exception:
+            return Response(
+                {"detail": "Invalid or expired token. Logout failed."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        data = response.data
+        # Устанавливаем токены в httpOnly cookie
+        response.set_cookie(
+            key="access",
+            value=data["access"],
+            httponly=True,
+            secure=True,
+            samesite="Lax"
+        )
+        response.set_cookie(
+            key="refresh",
+            value=data["refresh"],
+            httponly=True,
+            secure=True,
+            samesite="Lax"
+        )
+        return response

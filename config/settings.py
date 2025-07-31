@@ -50,15 +50,16 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "rest_framework_simplejwt",
-    "rest_framework_simplejwt.token_blacklist",
     "django_filters",
     "drf_yasg", # HW_19 - Adding Swagger
+    'rest_framework_simplejwt.token_blacklist', # HW_20 - Для logout
 
     # Мои приложения
     "library",
     "project",
     "TaskManager_app",
     "shop",
+
 
 ]
 
@@ -243,7 +244,7 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': False,
-    'BLACKLIST_AFTER_ROTATION': True,
+    'ROTATE_REFRESH_TOKENS': True, # _____ HW_20
+    'BLACKLIST_AFTER_ROTATION': True, # ______ HW_20
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
