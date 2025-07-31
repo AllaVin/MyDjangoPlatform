@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "django_filters",
-    "drf_yasg",
+    "drf_yasg", # HW_19 - Adding Swagger
 
     # Мои приложения
     "library",
@@ -70,7 +70,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'shop.middleware.JWTAuthenticationMiddleware',
+    'config.middleware.JWTAuthenticationMiddleware',
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -205,7 +205,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication', # Для работы в POSTMAN
+        'rest_framework.authentication.SessionAuthentication', # Для работы в браузере и админ-панели
         # 'rest_framework.authentication.BasicAuthentication',
     # 'rest_framework.authentication.TokenAuthentication',
     # Если вы хотите использовать несколько методов, добавьте их здесь.
@@ -216,9 +217,9 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
-    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     # Пагинация
-    'DEFAULT_PAGINATION_CLASS': 'config.paginations.BookCursorPagination',
+    # 'DEFAULT_PAGINATION_CLASS': 'config.paginations.Pa',
     'PAGE_SIZE': 5,
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
 
@@ -235,7 +236,7 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',
-        'rest_framework.filters.OrderingFilter',
+        # 'rest_framework.filters.OrderingFilter',
     ],
 }
 

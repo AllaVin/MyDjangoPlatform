@@ -215,34 +215,34 @@ class LoginView(APIView):
         user = authenticate(request, username=username, password=password)
 
         if user:
-         """# Создаем успешный ответ """
-        response = Response(status=status.HTTP_200_OK)
-        # ВЫНЕСЛИ В ОТДЕЛЬНУЮ ФУНКЦИЮ
-        # # Если пользователь найден, создаем для него токены
-        # refresh = RefreshToken.for_user(user)
-        # access_token = refresh.access_token
-        #
-        #
-        # # Устанавливаем access_token в cookie
-        # response.set_cookie(
-        #     key='access_token',
-        #     value=str(access_token),
-        #     httponly=True,  # Защита от доступа через JavaScript
-        #     secure=False,   # В продакшене должно быть True (только для HTTPS)
-        #     samesite='Lax'
-        # )
-        # # Устанавливаем refresh_token в cookie
-        # response.set_cookie(
-        #     key='refresh_token',
-        #     value=str(refresh),
-        #     httponly=True,
-        #     secure=False,   # В продакшене должно быть True
-        #     samesite='Lax'
-        # )
+            """# Создаем успешный ответ """
+            response = Response(status=status.HTTP_200_OK)
+            # ВЫНЕСЛИ В ОТДЕЛЬНУЮ ФУНКЦИЮ
+            # # Если пользователь найден, создаем для него токены
+            # refresh = RefreshToken.for_user(user)
+            # access_token = refresh.access_token
+            #
+            #
+            # # Устанавливаем access_token в cookie
+            # response.set_cookie(
+            #     key='access_token',
+            #     value=str(access_token),
+            #     httponly=True,  # Защита от доступа через JavaScript
+            #     secure=False,   # В продакшене должно быть True (только для HTTPS)
+            #     samesite='Lax'
+            # )
+            # # Устанавливаем refresh_token в cookie
+            # response.set_cookie(
+            #     key='refresh_token',
+            #     value=str(refresh),
+            #     httponly=True,
+            #     secure=False,   # В продакшене должно быть True
+            #     samesite='Lax'
+            # )
 
-        set_jwt_cookies(response, user)
-
-        return response
+            set_jwt_cookies(response, user)
+            return response
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 

@@ -19,10 +19,10 @@ from django.urls import path, include
 from django.urls import path, re_path, include
 from django.conf.urls.static import static
 from django.contrib import admin
-from rest_framework import permissions
-from drf_yasg.views import get_schema_view
-from drf_yasg import openapi
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework import permissions      #_____ HW_19
+from drf_yasg.views import get_schema_view  #_____ HW_19
+from drf_yasg import openapi #_____ HW_19
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView #_____ HW_19
 from rest_framework.authtoken.views import obtain_auth_token
 from TaskManager_app.views import ProfileView
 
@@ -46,7 +46,7 @@ urlpatterns = [
     # path("project/", project.urls),
     path('project/', include('project.urls')), ## http://127.0.0.1:8000/admin/project/
     path('library/', include('library.urls')), ## http://127.0.0.1:8000/admin/library/
-    path('TaskManager_app/', include('TaskManager_app.urls')), # http://127.0.0.1:8000/admin/TaskManager_app/
+    # path('TaskManager_app/', include('TaskManager_app.urls')), # http://127.0.0.1:8000/admin/TaskManager_app/
 
     # # _____ HW_15 Task 1. Доюавление путей в рамках выполнения задания
     # Swagger UI:
@@ -60,7 +60,7 @@ urlpatterns = [
     # Приложение shop
     path('shop/', include('shop.urls')), # "category": "http://127.0.0.1:8000/shop/category/"
 
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'), # POST /api/token/ — получить токен (нужны username и password).
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'), # POST /api/token/ — получить токен (нужны username и password). # JWT
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), # POST /api/token/refresh/ — обновить токен.
     path('api/', include('TaskManager_app.urls')),  # API эндпоинты
     # path('get-token/', obtain_auth_token, name='get_token'), # Маршрут для получения токена

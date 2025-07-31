@@ -68,9 +68,14 @@ class TaskCountSerializer(serializers.ModelSerializer):
 # Переопределите поле created_at как read_only.
 class SubTaskCreateSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(read_only=True) # Такое поле нельзя будет изменить при создании или обновлении объекта через API.
+    owner = serializers.StringRelatedField(read_only=True)  # Добавляем владельца (только для чтения)
     class Meta:
         model = SubTask
         fields = '__all__'
+
+    def create(self, validated_data):
+        validated_data['owner'] = self.context['request'].user  # При создании проставляем владельца автоматически
+        return super().create(validated_data)
 
 # _____ HW_13 Задание 2: Переопределение методов create и update
 # Создайте сериализатор для категории CategoryCreateSerializer, переопределив методы create и update для проверки уникальности названия категории. Если категория с таким названием уже существует, возвращайте ошибку валидации.

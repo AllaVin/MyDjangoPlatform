@@ -12,6 +12,8 @@ from rest_framework.response import Response
 from django.db.models import Count
 from django.utils.timezone import now
 from rest_framework.pagination import PageNumberPagination
+
+from config.paginations import BookCursorPagination
 from .filters import SubTaskFilter
 from rest_framework import generics, filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -19,7 +21,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from TaskManager_app.serializers import TaskCreateSerializer, TaskByIDSerializer
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from .permissions import IsAdminOrOwner
+from TaskManager_app.permissions import IsAdminOrOwner
 
 # _____ Задание 5 HW_13: Создание классов представлений
 # Создайте классы представлений для работы с подзадачами (SubTasks), включая создание, получение, обновление и
@@ -365,12 +367,14 @@ class FilteredSubTaskListView(generics.ListAPIView):
 
 class TaskListCreateView(generics.ListCreateAPIView):
     queryset = Task.objects.all()
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    # serializer_class = TaskListSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['status', 'deadline']
     search_fields = ['title', 'description']
+    pagination_class = BookCursorPagination
     ordering_fields = ['created_at']
     ordering = ['-created_at']
-
+    #
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return TaskListSerializer
@@ -378,6 +382,30 @@ class TaskListCreateView(generics.ListCreateAPIView):
     # При создании задачи автоматом проставляем владельца
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    # def list(self, request, *args, **kwargs):
+    #     # filters = {}
+    #     # created_at_week_day = request.query_params.get('weekday')
+    #
+    #     # if created_at_week_day:
+    #     # filters['created_at__week_day'] = int(created_at_week_day)
+    #
+    #     queryset = self.get_queryset()
+    #
+    #     # if filters:
+    #     # queryset = queryset.filter(**filters)
+    #
+    #     queryset = self.filter_queryset(queryset)
+    #
+    #     page = self.paginate_queryset(queryset)
+    #
+    #     if page is not None:
+    #         serializer = self.get_serializer(page, many=True)
+    #         return self.get_paginated_response(serializer.data)
+    #
+    #     serializer = self.get_serializer(queryset, many=True)
+    #
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
 
 class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
@@ -448,3 +476,53 @@ class ProfileView(APIView):
             "is_staff": request.user.is_staff,
             "is_superuser": request.user.is_superuser
         })
+
+
+# HW_19 Извлечение текущего пользователя из запроса
+# Шаги для выполнения:
+# Обновите модели, чтобы включить поле owner.
+# Обновите модели Task и SubTask для включения поля owner.
+# Измените сериализаторы.
+# Измените сериализаторы для моделей Task и SubTask для работы с новым полем.
+# Переопределите метод perform_create в представлениях.
+# Обновите представления для автоматического добавления владельца объекта.
+
+class TaskViewSet(viewsets.ModelViewSet):
+    queryset = Task.objects.all()
+    permission_classes = [IsAuthenticated, IsAdminOrOwner]
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return TaskListSerializer
+        return TaskCreateSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)  # 🔹 Проставляем владельца
+
+    def get_queryset(self):
+        """
+        Если ?my=true → вернуть задачи только текущего пользователя
+        """
+        queryset = super().get_queryset()
+        if self.request.query_params.get('my') == 'true':
+            return queryset.filter(owner=self.request.user)
+        return queryset
+
+    #_____ HW_19. Добавим отдельный роут для отображения задач, принадлежащих только текущему пользователю
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def my(self, request):
+        """
+        Возвращает только задачи текущего пользователя
+        """
+        tasks = Task.objects.filter(owner=request.user)
+        serializer = TaskListSerializer(tasks, many=True)
+        return Response(serializer.data)
+
+
+class SubTaskViewSet(viewsets.ModelViewSet):
+    queryset = SubTask.objects.all()
+    serializer_class = SubTaskCreateSerializer
+    permission_classes = [IsAuthenticated, IsAdminOrOwner]
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)  # 🔹 Проставляем владельца
